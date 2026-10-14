@@ -75,6 +75,9 @@ Ohne Avatare zeigt die Bühne Initialen.
 - **Kosten sehen:** Unter jedem Urteil steht, wie viele Agenten liefen und wie viele Tokens das kostete.
 - **Wiedervorlage:** `/generalprobe wiedervorlage <sitzung>` – derselbe Rat prüft nach ein paar Wochen,
   welche Einwände ausgeräumt sind und welche noch offen.
+- **Film:** `viewer/film.html#<sitzung>&format=4x5` (oder `16x9`) spielt eine Sitzung als kurzen Clip auf der
+  Sofa-Bühne ab, mit Kamerafahrt und Kernsätzen. Welche Beiträge vorkommen, steht im Feld `film` der Sitzung.
+  Die Sofa-Szene gibt es bisher für den Beispielrat.
 - **Rückvergleich:** `/generalprobe rueckvergleich` – schick frühere Entscheidungen mit bekanntem Ausgang
   durch den Rat (Vorlage `sessions/rueckvergleich/faelle.beispiel.json`) und miss, wie oft er richtig
   gelegen hätte. Erst danach weißt du, wie viel du seinem Urteil glauben solltest.

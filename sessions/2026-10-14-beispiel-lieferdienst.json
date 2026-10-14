@@ -328,5 +328,18 @@
     "tokens": 478083,
     "agent_typ": "Lese-Agent",
     "hinweis": "gemessen aus den subagent_tokens der Agent-Aufrufe"
+  },
+  "film": {
+    "pitch": "Eine Bäckerei will Firmen das Frühstück liefern.",
+    "beitraege": [
+      0,
+      14,
+      15,
+      17
+    ],
+    "urteil": [
+      "Go für einen Test, nicht für den Lieferdienst.",
+      "Zwei bezahlte Probemorgen. Das Leasing erst bei festen Bestellungen."
+    ]
   }
 }

@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generalprobe · Film</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Film-Ansicht: die Sitzung als kurzer Clip auf der Sofa-Bühne (16:9 oder 4:5), gedacht für Bildschirmaufnahmen */
+  :root { --bg: #060b16; --fg: #f8fafc; --fg-2: #94a3b8; --cyan: #22d3ee; --gold: #fbbf24; --rot: #fb7185;
+    --sans: 'Instrument Sans', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, monospace; }
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  #buehne { position: absolute; left: 0; top: 0; overflow: hidden; transform-origin: 0 0; color: var(--fg); font-family: var(--sans);
+    background: radial-gradient(ellipse 70% 45% at 50% 50%, rgba(64, 34, 234, .22), transparent 70%), var(--bg); -webkit-font-smoothing: antialiased; }
+  #kamera { position: absolute; left: 0; top: 0; transform-origin: 0 0; transition: transform 1.2s cubic-bezier(.65, 0, .35, 1); }
+  #kamera .basis { position: absolute; left: 0; top: 0; display: block;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 5%, #000 93%, transparent); mask-image: linear-gradient(to bottom, transparent, #000 5%, #000 93%, transparent); }
+  .flick { position: absolute; opacity: 0; pointer-events: none; }
+  .fig[data-f="m1"] .f-m1, .fig[data-f="m2"] .f-m2, .fig[data-f="m3"] .f-m3, .fig[data-f="m4"] .f-m4, .fig[data-f="blink"] .f-blink { opacity: 1; }
+  #licht { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .7s; }
+  #licht.an { opacity: 1; }
+
+  .marke { position: absolute; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: var(--marke); z-index: 5; }
+  .marke svg { color: var(--gold); }
+  .marke .sim { font: 500 calc(var(--marke) * .55) var(--mono); color: var(--fg-2); border: 1px solid rgba(148, 163, 184, .35); border-radius: 99px; padding: 3px 12px; }
+
+  .tafel { position: absolute; left: var(--rand); right: var(--rand); z-index: 4; transition: opacity .6s, transform .6s; }
+  .tafel.weg { opacity: 0; transform: translateY(14px); }
+  .kicker { font: 500 var(--klein) var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--cyan); margin-bottom: 14px; }
+  .titel { font-size: var(--gross); font-weight: 700; line-height: 1.12; letter-spacing: -.015em; }
+  .unter { margin-top: 14px; font-size: var(--mittel); color: var(--fg-2); }
+
+  #rede { bottom: var(--unten); }
+  #rede .wer { display: flex; align-items: center; gap: 12px; font-size: var(--mittel); font-weight: 600; margin-bottom: 12px; }
+  #rede .wer::before { content: ''; width: 12px; height: 12px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 14px var(--cyan); }
+  #rede .wer span { font-weight: 400; color: var(--fg-2); }
+  #rede .satz { font-size: var(--gross); font-weight: 650; line-height: 1.16; letter-spacing: -.01em; }
+  #rede .satz i { font-style: normal; opacity: .14; transition: opacity .18s; }
+  #rede .satz i.da { opacity: 1; }
+  .schleier { position: absolute; left: 0; right: 0; bottom: 0; height: var(--schleier); z-index: 3; pointer-events: none;
+    background: linear-gradient(to bottom, transparent, rgba(6, 11, 22, .82) 45%, rgba(6, 11, 22, .96)); transition: opacity .6s; }
+
+  .stempel { position: absolute; z-index: 4; transform: translate(-50%, -50%) rotate(-7deg) scale(1.6); opacity: 0;
+    font: 700 var(--stempel) var(--sans); letter-spacing: .04em; padding: 6px 14px; border: 3px solid currentColor; border-radius: 8px; white-space: nowrap;
+    background: rgba(6, 11, 22, .72); transition: transform .35s cubic-bezier(.2, 1.4, .4, 1), opacity .2s; }
+  .stempel.da { transform: translate(-50%, -50%) rotate(-7deg) scale(1); opacity: 1; }
+  .stempel.ja { color: var(--gold); } .stempel.nein { color: var(--rot); }
+
+  #urteil, #ende { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; text-align: center; padding: 0 var(--rand);
+    background: rgba(6, 11, 22, .86); opacity: 0; transition: opacity .7s; }
+  #urteil.da, #ende.da { opacity: 1; }
+  #ende { background: var(--bg); }
+  .badge { display: inline-block; font: 700 calc(var(--gross) * 1.5) var(--sans); letter-spacing: .06em; color: var(--gold); border: 4px solid var(--gold);
+    border-radius: 14px; padding: 4px 30px; margin-bottom: 30px; }
+  .badge.nogo { color: var(--rot); border-color: var(--rot); }
+  #urteil .titel { max-width: 18em; margin: 0 auto; }
+  #urteil .unter, #ende .unter { max-width: 26em; margin-left: auto; margin-right: auto; }
+  #ende .repo { margin-top: 26px; font: 500 var(--mittel) var(--mono); color: var(--cyan); }
+  #ende .hinweis { margin-top: 40px; font: 400 var(--klein) var(--mono); color: var(--fg-2); }
+</style>
+</head>
+<body>
+<div id="buehne">
+  <div id="kamera"><img class="basis" id="basis" alt=""><div id="figuren"></div><div id="licht"></div></div>
+  <div class="marke" id="marke"><svg width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h20M4 18l-1-10 5 4 4-7 4 7 5-4-1 10"/></svg><span id="markenname">Generalprobe</span><span class="sim">KI-Simulation</span></div>
+  <div class="tafel weg" id="vorhaben"><div class="kicker">Das Vorhaben</div><div class="titel" id="pitch"></div><div class="unter" id="gruender"></div></div>
+  <div class="schleier" id="schleier" style="opacity:0"></div>
+  <div class="tafel weg" id="rede"><div class="wer" id="wer"></div><div class="satz" id="satz"></div></div>
+  <div id="stempel"></div>
+  <div id="urteil"><div><div class="badge" id="badge"></div><div class="titel" id="u1"></div><div class="unter" id="u2"></div></div></div>
+  <div id="ende"><div><div class="titel">Die Generalprobe vor der Entscheidung</div><div class="unter">Fünf Rollen prüfen ein Vorhaben, bevor Geld fließt. Kostenlos als Baukasten für Claude Code.</div>
+    <div class="repo">github.com/Vektoris-AI/generalprobe</div><div class="hinweis">KI-Simulation. Die Ratsmitglieder sind Rollen, keine echten Personen.</div></div></div>
+</div>
+<script src="rat.js"></script>
+<script src="sofa.js"></script>
+<script>
+// Aufruf: film.html#<sitzung>&format=4x5 (Standard 16x9). Startet automatisch, außer mit &warten; dann window.filmStart().
+// Am Ende steht window.filmFertig = true (für die Aufnahme).
+const $ = s => document.querySelector(s);
+const P = Object.fromEntries(location.hash.slice(1).split('&').map(x => x.split('=')).map(([k, v]) => [k, v ?? true]));
+const ID = Object.keys(P)[0], HOCH = P.format === '4x5';
+const W = HOCH ? 1080 : 1920, H = HOCH ? 1350 : 1080;
+const SOFA = window.LR_SOFA, RAT = window.LR_RAT || {};
+const warte = ms => new Promise(r => setTimeout(r, ms));
+const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+// Maße je Format
+const B = $('#buehne'); B.style.width = W + 'px'; B.style.height = H + 'px';
+const V = HOCH ? { rand: '72px', gross: '58px', mittel: '30px', klein: '22px', marke: '30px', stempel: '22px', unten: '96px', schleier: '560px' }
+               : { rand: '96px', gross: '54px', mittel: '28px', klein: '20px', marke: '28px', stempel: '26px', unten: '72px', schleier: '420px' };
+Object.entries(V).forEach(([k, v]) => B.style.setProperty('--' + k, v));
+$('#marke').style.cssText = `left:${V.rand};top:${HOCH ? 72 : 48}px`;
+$('#vorhaben').style.cssText = HOCH ? 'top:190px' : `bottom:${V.unten}`;
+function einpassen() { const s = Math.min(innerWidth / W, innerHeight / H); B.style.transform = `translate(${(innerWidth - W * s) / 2}px,${(innerHeight - H * s) / 2}px) scale(${s})`; }
+addEventListener('resize', einpassen); einpassen();
+
+// Kamera: Totale (4:5 als Band in der Bildmitte) oder nah auf eine Figur
+const SW = SOFA.breite, SH = SOFA.hoehe, kamera = $('#kamera');
+kamera.style.width = SW + 'px'; kamera.style.height = SH + 'px';
+let cam = { s: 1, x: 0, y: 0 };
+function setze(s, x, y) { cam = { s, x, y }; kamera.style.transform = `translate(${x}px,${y}px) scale(${s})`; }
+// 4:5: so nah, dass alle fünf gerade noch ins Bild passen; 16:9: die ganze Szene
+const XS = Object.values(SOFA.figuren).map(f => f.x), MITTE = (Math.min(...XS) + Math.max(...XS)) / 2;
+const totaleWerte = () => { if (!HOCH) return [W / SW, 0, 0]; const s = .55; return [s, W / 2 - MITTE * s, (H - SH * s) / 2 + 40]; };
+function totale() { setze(...totaleWerte()); }
+function nah(slug) {
+  const f = SOFA.figuren[slug], s = HOCH ? 1.12 : 1.55;
+  const x = Math.min(0, Math.max(W - SW * s, W / 2 - f.x * s)), y = Math.min(0, Math.max(H - SH * s, H * (HOCH ? .33 : .36) - f.y * s));
+  setze(s, x, y);
+}
+function licht(slug) {
+  const l = $('#licht');
+  if (!slug) return l.classList.remove('an');
+  const f = SOFA.figuren[slug];
+  l.style.background = `radial-gradient(ellipse 300px 640px at ${f.x}px ${f.y + 300}px, transparent 55%, rgba(6, 11, 22, .62) 100%)`;
+  l.classList.add('an');
+}
+
+// Figuren mit Mund- und Augenflicken
+const figuren = $('#figuren');
+for (const [slug, f] of Object.entries(SOFA.figuren)) {
+  const el = document.createElement('div'); el.className = 'fig'; el.dataset.slug = slug;
+  el.innerHTML = Object.entries(f.flicken).map(([v, p]) => `<img class="flick f-${v}" src="${p.bild}" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px" alt="">`).join('');
+  figuren.appendChild(el);
+}
+const fig = slug => figuren.querySelector(`[data-slug="${slug}"]`);
+// Lippenbewegung wie in der Bühnen-Ansicht: je Silbe erst leicht offen, dann die Vokalform; fehlende Formen fallen zurück
+const ERSATZ = { m1: ['m1', 'm2'], m2: ['m2', 'm1'], m3: ['m3', 'm2', 'm1'], m4: ['m4', 'm2', 'm1'] };
+const form = (el, v) => v && (ERSATZ[v].find(x => el.querySelector('.f-' + x)) ?? null);
+const visem = (v, erste) => /^(ei|ai|a|ä)/i.test(v) ? 'm2' : /^(eu|äu|o|u|ö|ü)/i.test(v) ? 'm3' : /^(ie|i|y)/i.test(v) ? 'm4' : erste ? 'm4' : 'm1';
+function sprich(el, wort, dauer) {
+  const silben = wort.match(/[aeiouäöüy]+/gi) || (/\d/.test(wort) ? ['a', 'e'] : []);
+  const folge = silben.flatMap((v, k) => ['m1', visem(v, k === 0)]).concat(['m1', null]);
+  folge.forEach((v, k) => setTimeout(() => { const f = form(el, v); if (f) el.dataset.f = f; else delete el.dataset.f; }, k * dauer / folge.length));
+}
+setInterval(() => figuren.querySelectorAll('.fig').forEach(el => {
+  if (el.dataset.f || Math.random() > .1) return;
+  el.dataset.f = 'blink'; setTimeout(() => { if (el.dataset.f === 'blink') delete el.dataset.f; }, 150);
+}), 400);
+
+function zeigeTafel(id, an) { $(id).classList.toggle('weg', !an); }
+const DATIV = { Der: 'dem', Die: 'der' };
+const anrede = slug => { const n = RAT[slug]?.name ?? ''; const [art, ...rest] = n.split(' '); return DATIV[art] ? `${DATIV[art]} ${rest.join(' ')}` : n; };
+
+async function sage(b) {
+  const el = fig(b.sprecher), woerter = b.kernpunkt.split(/\s+/);
+  $('#wer').innerHTML = esc(RAT[b.sprecher]?.name) + (b.an && RAT[b.an] ? ` <span>widerspricht ${esc(anrede(b.an))}</span>` : b.phase === 'eindruck' ? ' <span>erster Eindruck</span>' : '');
+  $('#satz').innerHTML = woerter.map(w => `<i>${esc(w)}</i>`).join(' ');
+  nah(b.sprecher); licht(b.sprecher); $('#schleier').style.opacity = 1;
+  await warte(900); zeigeTafel('#rede', true); await warte(350);
+  const spans = [...$('#satz').children];
+  for (let k = 0; k < woerter.length; k++) {
+    const silben = (woerter[k].match(/[aeiouäöüy]+/gi) || ['a']).length, dauer = Math.max(260, silben * 200);
+    spans[k].classList.add('da'); sprich(el, woerter[k], dauer); await warte(dauer + 40);
+  }
+  delete el.dataset.f; await warte(1200); zeigeTafel('#rede', false); await warte(300);
+}
+
+async function film(S) {
+  const F = S.film || {};
+  $('#pitch').textContent = F.pitch || S.titel; $('#gruender').textContent = S.pitch.gruender;
+  const beitraege = (F.beitraege || []).map(i => S.beitraege[i]).filter(b => b?.kernpunkt && SOFA.figuren[b.sprecher]);
+  totale(); await warte(400);
+  zeigeTafel('#vorhaben', true); $('#schleier').style.opacity = HOCH ? 0 : 1; await warte(3600);
+  zeigeTafel('#vorhaben', false); await warte(400);
+  for (const b of beitraege) await sage(b);
+  // Votum: zurück in die Totale, jede Rolle bekommt ihren Stempel
+  licht(null); $('#schleier').style.opacity = 0; totale(); await warte(1400);
+  const voten = S.beitraege.filter(b => b.phase === 'angebote' && SOFA.figuren[b.sprecher]);
+  const reihe = Object.keys(SOFA.figuren).map(s => voten.find(b => b.sprecher === s)).filter(Boolean);
+  for (const [k, b] of reihe.entries()) {
+    const f = SOFA.figuren[b.sprecher], ja = b.haltung?.status !== 'raus';
+    const st = document.createElement('div'); st.className = 'stempel ' + (ja ? 'ja' : 'nein'); st.textContent = ja ? 'JA, WENN …' : 'NEIN';
+    st.style.left = cam.x + f.x * cam.s + 'px'; st.style.top = cam.y + (f.y - 250) * cam.s + (k % 2 ? -46 : 0) + 'px';
+    $('#stempel').appendChild(st); requestAnimationFrame(() => st.classList.add('da'));
+    sprich(fig(b.sprecher), ja ? 'ja' : 'nein', 420); await warte(520);
+  }
+  await warte(1500);
+  const go = S.urteil.ergebnis === 'deal';
+  $('#badge').textContent = go ? 'GO' : 'NO-GO'; $('#badge').classList.toggle('nogo', !go);
+  $('#u1').textContent = F.urteil?.[0] ?? ''; $('#u2').textContent = F.urteil?.[1] ?? '';
+  $('#urteil').classList.add('da'); await warte(3800);
+  $('#urteil').classList.remove('da'); $('#ende').classList.add('da'); await warte(3300);
+  window.filmFertig = true;
+}
+
+window.filmFertig = false;
+const sc = document.createElement('script'); sc.src = '../sessions/' + encodeURIComponent(ID) + '.js';
+sc.onload = async () => {
+  const basis = $('#basis'); basis.src = SOFA.bild; basis.width = SW; basis.height = SH;
+  await Promise.all([...document.images].map(i => i.decode().catch(() => {}))); await document.fonts.ready;
+  totale(); window.filmBereit = true;
+  window.filmStart = () => film(window.LR_SESSION);
+  if (!P.warten) window.filmStart();
+};
+document.body.appendChild(sc);
+</script>
+</body>
+</html>
