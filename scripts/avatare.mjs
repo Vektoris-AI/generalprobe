@@ -50,7 +50,7 @@ const VARIANTEN = {
 async function upload(file) {
   const buf = await fs.readFile(file); const typ = path.extname(file) === '.png' ? 'png' : 'jpeg';
   for (const host of ['https://kieai.redpandaai.co/api/file-base64-upload', 'https://api.kie.ai/api/file-base64-upload']) {
-    const r = await fetch(host, { method: 'POST', headers: H, body: JSON.stringify({ base64Data: `data:image/${typ};base64,${buf.toString('base64')}`, uploadPath: 'ki-beirat', fileName: path.basename(file) }) }).then(r => r.json()).catch(() => null);
+    const r = await fetch(host, { method: 'POST', headers: H, body: JSON.stringify({ base64Data: `data:image/${typ};base64,${buf.toString('base64')}`, uploadPath: 'generalprobe', fileName: path.basename(file) }) }).then(r => r.json()).catch(() => null);
     const url = r?.data?.downloadUrl ?? r?.data?.fileUrl; if (url) return url;
   }
   throw new Error('Upload fehlgeschlagen: ' + file);

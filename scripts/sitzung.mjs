@@ -65,7 +65,7 @@ const kond = a => a.betrag == null ? 'Ja, wenn …' : a.anteil ? `${euro(a.betra
 function protokoll(s) {
   const wer = x => x === 'gruender' ? s.pitch.gruender : x === 'moderator' ? 'Moderation' : (rat[x]?.name ?? x);
   const beirat = s.format === 'beirat';
-  const z = [`# ${s.marke ?? (beirat ? 'KI-Beirat' : 'Pitch-Runde')}: ${s.titel} (${s.datum})`, '',
+  const z = [`# ${s.marke ?? (beirat ? 'Generalprobe' : 'Pitch-Runde')}: ${s.titel} (${s.datum})`, '',
     `> ${beirat ? 'KI-Simulation. Die Ratsmitglieder sind Rollen, keine echten Personen.' : 'KI-Simulation, keine echten Aussagen der genannten Personen. Nur intern.'}`, '',
     `${s.pitch.forderung ? `**Forderung:** ${kond(s.pitch.forderung)} · ` : ''}**Modus:** ${s.modus ?? '–'}`, '',
     `**Panel:** ${s.panel.map(p => `${wer(p.slug)} (${p.warum})`).join('; ')}`, '', '## Pitch', '', s.pitch.text, ''];

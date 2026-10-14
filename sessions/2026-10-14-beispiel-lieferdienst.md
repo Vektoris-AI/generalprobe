@@ -1,4 +1,4 @@
-# KI-Beirat: Beispiel: Lieferdienst für Firmenfrühstück (2026-10-14)
+# Generalprobe: Beispiel: Lieferdienst für Firmenfrühstück (2026-10-14)
 
 > KI-Simulation. Die Ratsmitglieder sind Rollen, keine echten Personen.
 

@@ -1,6 +1,6 @@
 ---
 name: ratsmitglied
-description: Ein Mitglied eines KI-Rats (z. B. Skill ki-beirat). Liest sein Dossier und den Sitzungsverlauf und antwortet ausschließlich mit dem verlangten JSON. Nur von einem Rats-Skill aufrufen lassen.
+description: Ein Mitglied eines KI-Rats (z. B. Skill generalprobe). Liest sein Dossier und den Sitzungsverlauf und antwortet ausschließlich mit dem verlangten JSON. Nur von einem Rats-Skill aufrufen lassen.
 tools: Read
 model: sonnet
 ---

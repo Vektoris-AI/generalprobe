@@ -1,9 +1,9 @@
 ---
-name: ki-beirat
-description: Eine Idee, ein Angebot, einen Preis oder eine Entscheidung vor einem KI-Beirat prüfen. Fünf Ratsmitglieder laufen als Sub-Agenten mit eigenem Dossier durch Pitch → Erster Eindruck → Kreuzverhör → Schlagabtausch → Votum → Urteil; das Ergebnis ist eine Sitzung, die eine Bühnen-Ansicht abspielt. Nutzen bei: „frag den Beirat", „KI-Beirat", „stress-test diese Idee", „prüf dieses Angebot", „was spricht dagegen", „Pitch üben".
+name: generalprobe
+description: Eine Idee, ein Angebot, einen Preis oder eine Entscheidung in einer Generalprobe prüfen. Fünf Ratsmitglieder laufen als Sub-Agenten mit eigenem Dossier durch Pitch → Erster Eindruck → Kreuzverhör → Schlagabtausch → Votum → Urteil; das Ergebnis ist eine Sitzung, die eine Bühnen-Ansicht abspielt. Nutzen bei: „frag den Beirat", „KI-Beirat", „stress-test diese Idee", „prüf dieses Angebot", „was spricht dagegen", „Pitch üben".
 ---
 
-# KI-Beirat
+# Generalprobe
 
 Ein Rat aus Sub-Agenten prüft eine Idee. Jedes Ratsmitglied hat ein eigenes Gehirn (ein Dossier in
 `skill/rat/`) und genau eine Leitfrage. Die Mitglieder fragen nach, widersprechen sich gegenseitig und
@@ -25,7 +25,7 @@ echten Pfad nehmen, z. B. `cd "<Base directory>" && pwd -P`, dann eine Ebene hö
 
 ## Aufruf
 
-`/ki-beirat <Vorhaben als Text oder Dateipfad>` — Schalter einfach in den Text schreiben:
+`/generalprobe <Vorhaben als Text oder Dateipfad>` — Schalter einfach in den Text schreiben:
 
 - `auto` — keine Rückfragen: Du beantwortest das Kreuzverhör selbst aus dem Vorhaben und kennzeichnest
   alles Unbelegte als Annahme.
@@ -108,7 +108,7 @@ ausführen. Die Ansicht zeigt danach die Trefferquote in der Kopfleiste.
 ## VORLAGE für die Mitglieder
 
 ```
-Du bist {NAME} ({ETIKETT}) in einem KI-Beirat. Lies zuerst dein Dossier: {ROOT}/skill/rat/{SLUG}.md
+Du bist {NAME} ({ETIKETT}) im Rat einer Generalprobe. Lies zuerst dein Dossier: {ROOT}/skill/rat/{SLUG}.md
 Urteile nach deinen dort beschriebenen Kriterien, Fragen, roten Flaggen und Denkmustern, sprich in deinem
 Tonfall. Deine Leitfrage, die nur du stellst: „{LEITFRAGE}"
 

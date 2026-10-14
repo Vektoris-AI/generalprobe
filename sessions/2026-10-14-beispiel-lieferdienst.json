@@ -1,6 +1,7 @@
 {
   "version": 1,
   "format": "beirat",
+  "oeffentlich": true,
   "id": "2026-10-14-beispiel-lieferdienst",
   "titel": "Beispiel: Lieferdienst für Firmenfrühstück",
   "datum": "2026-10-14",

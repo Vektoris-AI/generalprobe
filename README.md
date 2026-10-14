@@ -1,6 +1,7 @@
-# KI-Beirat
+# Generalprobe
 
-Ein Rat aus KI-Agenten, der deine Idee prüft, bevor du Geld und Monate hineinsteckst.
+Die Generalprobe für deine Entscheidung: Ein Rat aus KI-Agenten prüft deine Idee, bevor du Geld und
+Monate hineinsteckst.
 
 Du beschreibst ein Vorhaben – eine Geschäftsidee, ein Angebot, einen Preis, eine Entscheidung. Fünf
 Ratsmitglieder nehmen es auseinander: Jedes hat ein eigenes Dossier und genau eine Leitfrage, alle fragen
@@ -26,9 +27,9 @@ Der Beispielrat sitzt so, wie er in vielen Mittelständlern sitzen könnte:
 ## Startklar in fünf Minuten
 
 ```bash
-git clone https://github.com/Vektoris-AI/ki-beirat.git
-cd ki-beirat
-ln -s "$PWD/skill" ~/.claude/skills/ki-beirat
+git clone https://github.com/Vektoris-AI/generalprobe.git
+cd generalprobe
+ln -s "$PWD/skill" ~/.claude/skills/generalprobe
 ln -s "$PWD/agents/ratsmitglied.md" ~/.claude/agents/ratsmitglied.md
 ```
 
@@ -38,7 +39,7 @@ und braucht dadurch rund 70 % weniger Tokens als ein Allzweck-Agent.
 Dann in Claude Code:
 
 ```
-/ki-beirat auto Wir wollen für unsere Bäckerei einen Lieferdienst für Firmenfrühstücke starten …
+/generalprobe auto Wir wollen für unsere Bäckerei einen Lieferdienst für Firmenfrühstücke starten …
 ```
 
 Ohne `auto` stellt dir der Rat seine Fragen und wartet auf deine Antworten – so lernst du am meisten.
@@ -72,15 +73,15 @@ Ohne Avatare zeigt die Bühne Initialen.
 ## Was der Rat außerdem kann
 
 - **Kosten sehen:** Unter jedem Urteil steht, wie viele Agenten liefen und wie viele Tokens das kostete.
-- **Wiedervorlage:** `/ki-beirat wiedervorlage <sitzung>` – derselbe Rat prüft nach ein paar Wochen,
+- **Wiedervorlage:** `/generalprobe wiedervorlage <sitzung>` – derselbe Rat prüft nach ein paar Wochen,
   welche Einwände ausgeräumt sind und welche noch offen.
-- **Rückvergleich:** `/ki-beirat rueckvergleich` – schick frühere Entscheidungen mit bekanntem Ausgang
+- **Rückvergleich:** `/generalprobe rueckvergleich` – schick frühere Entscheidungen mit bekanntem Ausgang
   durch den Rat (Vorlage `sessions/rueckvergleich/faelle.beispiel.json`) und miss, wie oft er richtig
   gelegen hätte. Erst danach weißt du, wie viel du seinem Urteil glauben solltest.
 
 ## Zwei Formate
 
-- **Beirat** (Standard): Am Ende stimmt jedes Mitglied ab – Nein oder Ja unter Bedingungen. Gut für
+- **Abstimmung** (Standard): Am Ende stimmt jedes Mitglied ab – Nein oder Ja unter Bedingungen. Gut für
   Entscheidungen, Angebote und Preise.
 - **Investoren**: `investoren` in den Aufruf schreiben und eine Forderung nennen („50.000 € für 10 %").
   Dann machen die Mitglieder Angebote, und es wird verhandelt. Gut, um einen Pitch zu üben.
@@ -98,7 +99,7 @@ Die Idee stammt von Nate Herks Claude-Skill „/roast-room"
 [Vektoris](https://vektoris.de) – wir bauen Wissenssysteme und KI-Automatisierung für kleine und mittlere
 Unternehmen.
 
-**Ihr wollt einen Beirat aus euren eigenen Leuten** – gespeist aus dem Wissen eures Betriebs, mit
+**Ihr wollt die Generalprobe mit euren eigenen Leuten** – gespeist aus dem Wissen eures Betriebs, mit
 Wiedervorlage im Quartal und einem Logbuch, wie oft er richtig lag? Das richten wir euch ein:
 [vektoris.de](https://vektoris.de) · kontakt@vektoris.de
 
