@@ -1,196 +1,175 @@
 window.LR_SOFA = {
- "breite": 2688,
- "hoehe": 1536,
- "bild": "sofa/szene-2x.jpg",
+ "breite": 5504,
+ "hoehe": 3072,
+ "bild": "sofa/szene-4k.jpg",
  "figuren": {
   "vertrieb": {
-   "x": 686,
-   "y": 694,
+   "x": 1405,
+   "y": 1471,
    "flicken": {
     "m1": {
      "bild": "sofa/flicken/vertrieb-m1.png",
-     "x": 618,
-     "y": 731,
-     "w": 142,
-     "h": 129
+     "x": 1345,
+     "y": 1426,
+     "w": 187,
+     "h": 149
     },
     "m2": {
      "bild": "sofa/flicken/vertrieb-m2.png",
-     "x": 661,
-     "y": 730,
-     "w": 91,
-     "h": 73
-    },
-    "m3": {
-     "bild": "sofa/flicken/vertrieb-m3.png",
-     "x": 670,
-     "y": 739,
-     "w": 73,
-     "h": 54
+     "x": 1329,
+     "y": 1425,
+     "w": 217,
+     "h": 158
     },
     "m4": {
      "bild": "sofa/flicken/vertrieb-m4.png",
-     "x": 634,
-     "y": 703,
-     "w": 145,
-     "h": 98
+     "x": 1307,
+     "y": 1395,
+     "w": 265,
+     "h": 188
     },
     "blink": {
      "bild": "sofa/flicken/vertrieb-blink.png",
-     "x": 621,
-     "y": 637,
-     "w": 168,
-     "h": 94
+     "x": 1256,
+     "y": 1235,
+     "w": 352,
+     "h": 201
     }
    }
   },
   "meister": {
-   "x": 1014,
-   "y": 704,
+   "x": 2076,
+   "y": 1492,
    "flicken": {
     "m1": {
      "bild": "sofa/flicken/meister-m1.png",
-     "x": 966,
-     "y": 723,
-     "w": 92,
-     "h": 60
+     "x": 1967,
+     "y": 1411,
+     "w": 203,
+     "h": 133
     },
     "m2": {
      "bild": "sofa/flicken/meister-m2.png",
-     "x": 967,
-     "y": 724,
-     "w": 97,
-     "h": 74
+     "x": 1959,
+     "y": 1409,
+     "w": 215,
+     "h": 217
     },
     "m4": {
      "bild": "sofa/flicken/meister-m4.png",
-     "x": 950,
-     "y": 702,
-     "w": 130,
-     "h": 92
+     "x": 1946,
+     "y": 1386,
+     "w": 252,
+     "h": 182
     },
     "blink": {
      "bild": "sofa/flicken/meister-blink.png",
-     "x": 942,
-     "y": 634,
-     "w": 138,
-     "h": 88
+     "x": 1922,
+     "y": 1245,
+     "w": 294,
+     "h": 232
     }
    }
   },
   "kundin": {
-   "x": 1352,
-   "y": 694,
+   "x": 2768,
+   "y": 1471,
    "flicken": {
     "m1": {
      "bild": "sofa/flicken/kundin-m1.png",
-     "x": 1312,
-     "y": 710,
-     "w": 84,
-     "h": 79
+     "x": 2584,
+     "y": 1392,
+     "w": 385,
+     "h": 260
     },
     "m2": {
      "bild": "sofa/flicken/kundin-m2.png",
-     "x": 1245,
-     "y": 702,
-     "w": 151,
-     "h": 145
-    },
-    "m3": {
-     "bild": "sofa/flicken/kundin-m3.png",
-     "x": 1334,
-     "y": 733,
-     "w": 43,
-     "h": 42
+     "x": 2624,
+     "y": 1418,
+     "w": 251,
+     "h": 169
     },
     "m4": {
      "bild": "sofa/flicken/kundin-m4.png",
-     "x": 1286,
-     "y": 703,
-     "w": 138,
-     "h": 105
+     "x": 2650,
+     "y": 1387,
+     "w": 248,
+     "h": 193
     },
     "blink": {
      "bild": "sofa/flicken/kundin-blink.png",
-     "x": 1265,
-     "y": 641,
-     "w": 161,
-     "h": 90
+     "x": 2533,
+     "y": 1244,
+     "w": 384,
+     "h": 193
     }
    }
   },
   "kaufmann": {
-   "x": 1838,
-   "y": 678,
+   "x": 3764,
+   "y": 1438,
    "flicken": {
     "m1": {
      "bild": "sofa/flicken/kaufmann-m1.png",
-     "x": 1780,
-     "y": 702,
-     "w": 119,
-     "h": 108
+     "x": 3662,
+     "y": 1399,
+     "w": 211,
+     "h": 153
     },
     "m2": {
      "bild": "sofa/flicken/kaufmann-m2.png",
-     "x": 1783,
-     "y": 711,
-     "w": 106,
-     "h": 101
-    },
-    "m3": {
-     "bild": "sofa/flicken/kaufmann-m3.png",
-     "x": 1790,
-     "y": 712,
-     "w": 95,
-     "h": 77
+     "x": 3656,
+     "y": 1394,
+     "w": 224,
+     "h": 156
     },
     "m4": {
      "bild": "sofa/flicken/kaufmann-m4.png",
-     "x": 1781,
-     "y": 710,
-     "w": 112,
-     "h": 90
+     "x": 3651,
+     "y": 1360,
+     "w": 247,
+     "h": 237
     },
     "blink": {
      "bild": "sofa/flicken/kaufmann-blink.png",
-     "x": 1768,
-     "y": 641,
-     "w": 137,
-     "h": 65
+     "x": 3587,
+     "y": 1193,
+     "w": 364,
+     "h": 227
     }
    }
   },
   "skeptikerin": {
-   "x": 2166,
-   "y": 704,
+   "x": 4435,
+   "y": 1492,
    "flicken": {
     "m1": {
      "bild": "sofa/flicken/skeptikerin-m1.png",
-     "x": 2124,
-     "y": 728,
-     "w": 87,
-     "h": 61
+     "x": 4358,
+     "y": 1424,
+     "w": 182,
+     "h": 138
     },
     "m2": {
      "bild": "sofa/flicken/skeptikerin-m2.png",
-     "x": 2122,
-     "y": 730,
-     "w": 90,
-     "h": 77
+     "x": 4326,
+     "y": 1404,
+     "w": 251,
+     "h": 169
     },
     "m4": {
      "bild": "sofa/flicken/skeptikerin-m4.png",
-     "x": 2113,
-     "y": 718,
-     "w": 111,
-     "h": 96
+     "x": 4350,
+     "y": 1422,
+     "w": 201,
+     "h": 147
     },
     "blink": {
      "bild": "sofa/flicken/skeptikerin-blink.png",
-     "x": 2087,
-     "y": 668,
-     "w": 163,
-     "h": 80
+     "x": 4290,
+     "y": 1297,
+     "w": 317,
+     "h": 133
     }
    }
   }

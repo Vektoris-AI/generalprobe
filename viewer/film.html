@@ -99,14 +99,15 @@ addEventListener('resize', einpassen); einpassen();
 // Kamera: Totale (4:5 als Band in der Bildmitte) oder nah auf eine Figur
 const SW = SOFA.breite, SH = SOFA.hoehe, kamera = $('#kamera');
 kamera.style.width = SW + 'px'; kamera.style.height = SH + 'px';
+const R = SW / 2688; // Kamera-, Licht- und Stempelmaße sind für eine 2688 px breite Szene eingestellt
 let cam = { s: 1, x: 0, y: 0 };
 function setze(s, x, y) { cam = { s, x, y }; kamera.style.transform = `translate(${x}px,${y}px) scale(${s})`; }
 // 4:5: so nah, dass alle fünf gerade noch ins Bild passen; 16:9: die ganze Szene
 const XS = Object.values(SOFA.figuren).map(f => f.x), MITTE = (Math.min(...XS) + Math.max(...XS)) / 2;
-const totaleWerte = () => { if (!HOCH) return [W / SW, 0, 0]; const s = .55; return [s, W / 2 - MITTE * s, (H - SH * s) / 2 + 40]; };
+const totaleWerte = () => { if (!HOCH) return [W / SW, 0, 0]; const s = .55 / R; return [s, W / 2 - MITTE * s, (H - SH * s) / 2 + 40]; };
 function totale() { setze(...totaleWerte()); }
 function nah(slug) {
-  const f = SOFA.figuren[slug], s = HOCH ? 1.12 : 1.55;
+  const f = SOFA.figuren[slug], s = (HOCH ? 1.12 : 1.55) / R;
   const x = Math.min(0, Math.max(W - SW * s, W / 2 - f.x * s)), y = Math.min(0, Math.max(H - SH * s, H * (HOCH ? .33 : .36) - f.y * s));
   setze(s, x, y);
 }
@@ -114,7 +115,7 @@ function licht(slug) {
   const l = $('#licht');
   if (!slug) return l.classList.remove('an');
   const f = SOFA.figuren[slug];
-  l.style.background = `radial-gradient(ellipse 300px 640px at ${f.x}px ${f.y + 300}px, transparent 55%, rgba(6, 11, 22, .62) 100%)`;
+  l.style.background = `radial-gradient(ellipse ${300 * R}px ${640 * R}px at ${f.x}px ${f.y + 300 * R}px, transparent 55%, rgba(6, 11, 22, .62) 100%)`;
   l.classList.add('an');
 }
 
@@ -173,7 +174,7 @@ async function film(S) {
   for (const [k, b] of reihe.entries()) {
     const f = SOFA.figuren[b.sprecher], ja = b.haltung?.status !== 'raus';
     const st = document.createElement('div'); st.className = 'stempel ' + (ja ? 'ja' : 'nein'); st.textContent = ja ? 'JA, WENN …' : 'NEIN';
-    st.style.left = cam.x + f.x * cam.s + 'px'; st.style.top = cam.y + (f.y - 250) * cam.s + (k % 2 ? -46 : 0) + 'px';
+    st.style.left = cam.x + f.x * cam.s + 'px'; st.style.top = cam.y + (f.y - 250 * R) * cam.s + (k % 2 ? -46 : 0) + 'px';
     $('#stempel').appendChild(st); requestAnimationFrame(() => st.classList.add('da'));
     sprich(fig(b.sprecher), ja ? 'ja' : 'nein', 420); await warte(520);
   }
