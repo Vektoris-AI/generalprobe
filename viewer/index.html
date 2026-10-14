@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KI-Rat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060b16; --bg-2: #0f172a; --bg-3: #16213a;
+    --line: rgba(148, 163, 184, .14); --line-2: rgba(148, 163, 184, .26);
+    --fg: #f8fafc; --fg-2: #94a3b8; --fg-3: #64748b;
+    --cyan: #22d3ee; --cyan-soft: rgba(34, 211, 238, .12);
+    --indigo: #4022ea; --gold: #fbbf24; --gold-soft: rgba(251, 191, 36, .12);
+    --rot: #fb7185; --rot-soft: rgba(251, 113, 133, .12);
+    --sans: 'Instrument Sans', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --r1: 14px; --r2: 10px; --r3: 6px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+
+  /* Kopfleiste */
+  .top { display: flex; align-items: center; gap: 24px; height: 56px; padding: 0 20px; border-bottom: 1px solid var(--line); }
+  .marke { display: flex; align-items: center; gap: 10px; font-weight: 600; white-space: nowrap; }
+  .marke svg { color: var(--gold); }
+  .marke .sim { font: 500 11px var(--mono); color: var(--fg-3); border: 1px solid var(--line-2); border-radius: 99px; padding: 2px 8px; }
+  .phasen { display: flex; gap: 4px; flex: 1; justify-content: center; overflow-x: auto; scrollbar-width: none; }
+  .phasen button { background: none; border: 0; padding: 6px 10px; border-radius: var(--r3); color: var(--fg-3); font-size: 13px; white-space: nowrap; display: flex; align-items: center; gap: 7px; }
+  .phasen button::before { content: ''; width: 6px; height: 6px; border-radius: 50%; border: 1px solid currentColor; }
+  .phasen button.erledigt { color: var(--fg-2); }
+  .phasen button.erledigt::before { background: currentColor; }
+  .phasen button.aktiv { color: var(--fg); background: var(--bg-2); }
+  .phasen button.aktiv::before { background: var(--cyan); border-color: var(--cyan); }
+  select { background: var(--bg-2); color: var(--fg); border: 1px solid var(--line-2); border-radius: var(--r3); padding: 6px 10px; font: 13px var(--sans); max-width: 240px; }
+
+  /* Raster */
+  .raster { display: grid; grid-template-columns: 1fr 340px; height: calc(100% - 56px); }
+  .buehne { position: relative; display: flex; flex-direction: column; min-height: 0; padding: 20px 24px 16px;
+    background: radial-gradient(ellipse 60% 55% at 50% 38%, rgba(64, 34, 234, .16), transparent 70%), var(--bg-2); }
+  .pitchkopf { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .pitchkopf h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.01em; }
+  .pitchkopf .wer { color: var(--fg-2); font-size: 14px; }
+  .forderung { font: 500 12px var(--mono); color: var(--cyan); background: var(--cyan-soft); border-radius: 99px; padding: 3px 10px; }
+
+  /* Rat im Halbkreis */
+  .runde { position: relative; flex: 1; min-height: 300px; }
+  .runde svg.faeden { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .faden { fill: none; stroke: var(--cyan); stroke-width: 1.5; stroke-dasharray: 5 6; opacity: .85; animation: lauf 1.2s linear infinite; }
+  .faden.gold { stroke: var(--gold); }
+  @keyframes lauf { to { stroke-dashoffset: -22; } }
+  .sitz { position: absolute; transform: translate(-50%, 0); width: 160px; text-align: center; transition: opacity .35s, filter .35s; }
+  .sitz .ava { position: relative; width: 148px; height: 148px; margin: 0 auto; transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
+  .sitz .ava img, .sitz .ava .init { width: 100%; height: 100%; border-radius: 50%; display: block; object-fit: cover;
+    -webkit-mask-image: radial-gradient(circle at 50% 46%, #000 62%, transparent 71%); mask-image: radial-gradient(circle at 50% 46%, #000 62%, transparent 71%); }
+  .sitz .ava .init { display: grid; place-items: center; font: 600 40px var(--sans); background: var(--bg-3); color: var(--fg-2); }
+  /* Sprechen: Mundformen (m1–m4) und Blinzeln liegen deckungsgleich über dem Ruhebild, data-f wählt das sichtbare; der Kopf nickt leicht */
+  .sitz .ava img.f { position: absolute; inset: 0; opacity: 0; }
+  .ava[data-f="m1"] .f-m1, .ava[data-f="m2"] .f-m2, .ava[data-f="m3"] .f-m3, .ava[data-f="m4"] .f-m4, .ava[data-f="blink"] .f-blink { opacity: 1; }
+  .sitz.spricht .ava img { animation: nicken 1.7s ease-in-out infinite; transform-origin: 50% 80%; }
+  @keyframes nicken { 0%, 100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-2px) rotate(-1.4deg); } 65% { transform: translateY(1px) rotate(.9deg); } }
+  .sitz .ava::after { content: ''; position: absolute; inset: 6px; border-radius: 50%; border: 1.5px solid transparent; transition: border-color .35s, box-shadow .35s; }
+  .runde.redet .sitz:not(.spricht):not(.ziel) { opacity: .55; }
+  .sitz.spricht .ava { transform: scale(1.1); }
+  .sitz.spricht .ava::after { border-color: var(--cyan); box-shadow: 0 0 34px rgba(34, 211, 238, .35); }
+  .sitz.ziel .ava::after { border-color: var(--line-2); border-style: dashed; }
+  .sitz.raus { filter: grayscale(1); }
+  .sitz.raus:not(.spricht) { opacity: .4 !important; }
+  .stempel { position: absolute; left: 50%; top: 54%; transform: translate(-50%, -50%) rotate(-12deg) scale(1.6); opacity: 0;
+    font: 700 22px var(--sans); letter-spacing: .12em; color: var(--rot); border: 2.5px solid var(--rot); border-radius: var(--r3); padding: 2px 10px; background: rgba(6, 11, 22, .6); transition: .3s cubic-bezier(.3, 1.6, .5, 1); }
+  .sitz.raus .stempel { opacity: 1; transform: translate(-50%, -50%) rotate(-12deg) scale(1); }
+  .schild { margin-top: 6px; display: inline-flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 12px; border-radius: var(--r2); background: rgba(6, 11, 22, .72); border: 1px solid var(--line); }
+  .sitz.spricht .schild { border-color: var(--line-2); }
+  .schild b { font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+  .schild i { font-style: normal; font-size: 11px; color: var(--fg-3); white-space: nowrap; }
+  .chip { font: 500 11px var(--mono); padding: 2px 8px; border-radius: 99px; color: var(--fg-2); background: rgba(148, 163, 184, .1); white-space: nowrap; }
+  .chip.interessiert { color: var(--cyan); background: var(--cyan-soft); }
+  .chip.raus { color: var(--rot); background: var(--rot-soft); }
+  .chip.angebot { color: var(--gold); background: var(--gold-soft); }
+  .gruender { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 6px 14px 6px 8px;
+    border-radius: 99px; background: var(--bg-3); border: 1px solid var(--line-2); font-size: 13px; color: var(--fg-2); white-space: nowrap; transition: .3s; }
+  .gruender .punkt { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--indigo); color: var(--fg); }
+  .gruender.spricht { color: var(--fg); border-color: var(--cyan); box-shadow: 0 0 24px rgba(34, 211, 238, .25); }
+
+  /* Sprechfeld */
+  .rede { margin: 18px auto 0; width: min(820px, 100%); min-height: 168px; padding: 16px 20px; border-radius: var(--r1); background: rgba(6, 11, 22, .78); border: 1px solid var(--line); }
+  .rede .kopf { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .rede .kopf img, .rede .kopf .mini { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex: none; }
+  .mini { display: grid; place-items: center; font: 600 11px var(--sans); background: var(--indigo); }
+  .rede .kopf b { font-weight: 600; }
+  .rede .was { margin-left: auto; font: 500 11px var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--fg-3); }
+  .tag { font: 500 10px var(--mono); color: var(--gold); border: 1px solid rgba(251, 191, 36, .4); border-radius: 99px; padding: 1px 7px; }
+  .rede .text { font-size: 19px; line-height: 1.5; letter-spacing: -.005em; }
+  .rede .text span { opacity: .22; transition: opacity .18s; }
+  .rede .text span.an { opacity: 1; }
+  .rede .kern { margin-top: 10px; font: 12px var(--mono); color: var(--fg-3); }
+  .angebot { margin-top: 12px; display: flex; gap: 16px; align-items: flex-start; padding: 10px 14px; border-radius: var(--r2); border: 1px solid rgba(251, 191, 36, .35); background: var(--gold-soft); }
+  .angebot .summe { font: 600 20px var(--sans); color: var(--gold); white-space: nowrap; }
+  .angebot ul { margin: 0; padding-left: 18px; color: var(--fg-2); font-size: 13.5px; }
+
+  .steuer { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+  .steuer button { background: var(--bg-3); border: 1px solid var(--line); border-radius: var(--r3); padding: 5px 10px; font-size: 12.5px; color: var(--fg-2); display: inline-flex; align-items: center; gap: 6px; }
+  .steuer button:hover { color: var(--fg); border-color: var(--line-2); }
+  .steuer button.an { color: var(--bg); background: var(--fg); border-color: var(--fg); }
+  .steuer .rest { font: 12px var(--mono); color: var(--fg-3); margin: 0 8px; }
+  .trenner { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
+
+  /* Mitschrift */
+  .mitschrift { border-left: 1px solid var(--line); overflow-y: auto; padding: 16px 14px 40px; scroll-behavior: smooth; }
+  .mitschrift h2 { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-3); margin: 18px 4px 8px; }
+  .mitschrift h2:first-child { margin-top: 2px; }
+  .notiz { display: block; width: 100%; text-align: left; background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--r2); padding: 9px 11px; margin-bottom: 6px; }
+  .notiz:hover { border-color: var(--line-2); }
+  .notiz.jetzt { border-color: var(--cyan); }
+  .notiz .z1 { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
+  .notiz .z1 img, .notiz .z1 .mini { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; font-size: 9px; }
+  .notiz .z1 i { margin-left: auto; font: 400 11px var(--sans); color: var(--fg-3); font-style: normal; }
+  .notiz p { margin: 4px 0 0; font-size: 13px; color: var(--fg-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* Urteil */
+  .urteil { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(6, 11, 22, .78); backdrop-filter: blur(6px); z-index: 10; }
+  .urteil[hidden] { display: none; }
+  .karte { width: min(760px, 100%); max-height: 100%; overflow-y: auto; background: var(--bg-2); border: 1px solid var(--line-2); border-radius: var(--r1); padding: 28px; }
+  .ergebnis { display: inline-block; font: 700 30px var(--sans); letter-spacing: .14em; border: 3px solid; border-radius: var(--r2); padding: 2px 16px; transform: rotate(-3deg); }
+  .ergebnis.deal { color: var(--gold); }
+  .ergebnis.kein_deal { color: var(--rot); }
+  .karte h3 { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-3); margin: 22px 0 8px; }
+  .dealzeile { display: flex; align-items: center; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
+  .dealzeile .koepfe { display: flex; }
+  .dealzeile .koepfe img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid var(--bg-2); margin-right: -10px; }
+  .dealzeile .summe { font: 600 24px var(--sans); color: var(--gold); margin-left: 10px; }
+  .einwand { display: flex; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r2); margin-bottom: 8px; }
+  .einwand img, .einwand .mini { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex: none; }
+  .einwand p { margin: 0; }
+  .einwand .weg { margin-top: 6px; color: var(--fg-2); font-size: 14px; }
+  .einwand .weg::before { content: 'So räumt ihr ihn aus: '; color: var(--cyan); }
+  .schritt { padding: 12px 14px; border-radius: var(--r2); background: var(--cyan-soft); border: 1px solid rgba(34, 211, 238, .3); }
+  .hinweis { margin-top: 22px; font-size: 12px; color: var(--fg-3); }
+  .knoepfe { display: flex; gap: 8px; margin-top: 18px; }
+  .knoepfe button { background: var(--bg-3); border: 1px solid var(--line-2); border-radius: var(--r3); padding: 8px 14px; }
+  .knoepfe button.primaer { background: var(--indigo); border-color: var(--indigo); }
+  .wv { font: 500 12px var(--mono); color: var(--gold); background: var(--gold-soft); border-radius: 99px; padding: 3px 10px; }
+  .treffer { font: 500 11px var(--mono); color: var(--cyan); border: 1px solid rgba(34, 211, 238, .35); border-radius: 99px; padding: 2px 9px; white-space: nowrap; }
+  .status { font: 500 10px var(--mono); border-radius: 99px; padding: 1px 7px; margin-left: 6px; }
+  .status.ausgeraeumt { color: var(--cyan); background: var(--cyan-soft); } .status.offen { color: var(--gold); background: var(--gold-soft); } .status.neu { color: var(--fg-2); background: rgba(148, 163, 184, .1); }
+  .leer { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--fg-2); }
+  .leer code { font: 13px var(--mono); color: var(--cyan); }
+
+  @media (max-width: 1100px) {
+    .raster { grid-template-columns: 1fr; height: auto; }
+    .buehne { min-height: 760px; }
+    .mitschrift { border-left: 0; border-top: 1px solid var(--line); max-height: 520px; }
+  }
+  @media (max-width: 760px) {
+    .top { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 10px; }
+    .phasen { order: 3; flex-basis: 100%; justify-content: flex-start; }
+    .buehne { padding: 16px; min-height: 640px; }
+    .sitz { width: 92px; }
+    .sitz .ava { width: 76px; height: 76px; }
+    .schild { padding: 4px 6px; } .schild b { font-size: 11.5px; white-space: normal; } .schild i { display: none; }
+    .stempel { font-size: 14px; }
+    .rede .text { font-size: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="marke">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>
+    <span id="marke">KI-Rat</span> <span class="sim">KI-Simulation</span> <span class="treffer" id="treffer" hidden></span>
+  </div>
+  <nav class="phasen" id="phasen" aria-label="Phasen"></nav>
+  <select id="wahl" aria-label="Sitzung wählen"></select>
+</header>
+<div class="raster">
+  <section class="buehne" id="buehne">
+    <div class="pitchkopf" id="pitchkopf"></div>
+    <div class="runde" id="runde"><svg class="faeden" id="faeden"></svg></div>
+    <div class="rede" id="rede" aria-live="polite"></div>
+    <div class="steuer" id="steuer">
+      <button id="zurueck" title="Zurück (←)">‹ Zurück</button>
+      <button id="spiel" title="Abspielen/Pause (Leertaste)">Pause</button>
+      <button id="vor" title="Weiter (→)">Weiter ›</button>
+      <span class="trenner"></span>
+      <button data-tempo="1">1×</button><button data-tempo="1.6">1,6×</button><button data-tempo="2.5">2,5×</button>
+      <span class="rest" id="rest"></span>
+      <button id="springen">Zum Urteil</button>
+    </div>
+  </section>
+  <aside class="mitschrift" id="mitschrift" aria-label="Mitschrift"></aside>
+</div>
+<div class="urteil" id="urteil" hidden></div>
+
+<script src="rat.js" onerror="window.LR_RAT={}"></script>
+<script src="../sessions/index.js" onerror="window.LR_INDEX=[]"></script>
+<script src="rueckvergleich.js" onerror="window.LR_RUECKVERGLEICH=null"></script>
+<script>
+const $ = s => document.querySelector(s);
+const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const euro = n => new Intl.NumberFormat('de-DE').format(n) + ' €';
+const kond = a => a.betrag == null ? F.ja : a.anteil ? `${euro(a.betrag)} für ${a.anteil} %` : `${euro(a.betrag)} ohne Anteil`;
+// Zwei Formate: „investoren" (Angebote mit Betrag und Anteil) und „beirat" (Votum: Nein oder Ja, wenn …)
+const FORMATE = {
+  investoren: { marke: 'Pitch-Runde', angebote: 'Angebote', verhandlung: 'Verhandlung', raus: 'Raus', stempel: 'RAUS', ja: 'Angebot', wasRaus: 'steigt aus', wasJa: 'macht ein Angebot',
+    ergebnis: { deal: 'DEAL', kein_deal: 'KEIN DEAL' }, hinweis: 'KI-Simulation auf Basis öffentlicher Quellen. Keine echten Aussagen der genannten Personen. Nur intern.' },
+  beirat: { marke: 'KI-Beirat', angebote: 'Votum', verhandlung: 'Nachfassen', raus: 'Nein', stempel: 'NEIN', ja: 'Ja, wenn …', wasRaus: 'stimmt dagegen', wasJa: 'stimmt zu, wenn …',
+    ergebnis: { deal: 'GO', kein_deal: 'NO-GO' }, hinweis: 'KI-Simulation. Die Ratsmitglieder sind Rollen, keine echten Personen.' },
+};
+let F = FORMATE.investoren;
+const PH = { pitch: 'Pitch', eindruck: 'Erster Eindruck', fragen: 'Kreuzverhör', schlagabtausch: 'Schlagabtausch', angebote: 'Angebote', verhandlung: 'Verhandlung', urteil: 'Urteil' };
+const WPS = 3.2; // Lesetempo bei 1×: Wörter pro Sekunde
+const L = window.LR_RAT || {}, IDX = window.LR_INDEX || [];
+let S, steps = [], i = 0, spielt = true, tempo = 1, uhr, wortUhr;
+
+const name = s => s === 'gruender' ? S.pitch.gruender : s === 'moderator' ? 'Moderation' : (L[s]?.name || s);
+const initialen = s => name(s).split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+const bild = (s, cls = '') => L[s] ? `<img class="${cls}" src="avatare/${s}.png" alt="" onerror="this.outerHTML='<span class=&quot;mini ${cls}&quot;>${initialen(s)}</span>'">` : `<span class="mini ${cls}">${s === 'gruender' ? 'G' : 'M'}</span>`;
+
+// Lippenbewegung: je Vokalgruppe (≈ Silbe) erst leicht offen, dann die Vokalform; fehlende Varianten fallen auf vorhandene zurück
+const ERSATZ = { m1: ['m1', 'm2'], m2: ['m2', 'm1'], m3: ['m3', 'm2', 'm1'], m4: ['m4', 'm2', 'm1'] };
+const form = (ava, v) => v && (ERSATZ[v].find(x => ava.querySelector('.f-' + x)) ?? null);
+// Vokal → Mundform; ein unbetontes „e“ (meist Endsilbe wie in -en, -er) bleibt klein, sonst grinsen alle
+const visem = (v, erste) => /^(ei|ai|a|ä)/i.test(v) ? 'm2' : /^(eu|äu|o|u|ö|ü)/i.test(v) ? 'm3' : /^(ie|i|y)/i.test(v) ? 'm4' : erste ? 'm4' : 'm1';
+const mundUhren = new Map();
+function sprich(ava, wort, dauer) {
+  (mundUhren.get(ava) || []).forEach(clearTimeout);
+  const silben = wort.match(/[aeiouäöüy]+/gi) || (/\d/.test(wort) ? ['a', 'e'] : []);
+  let folge = silben.flatMap((v, k) => ['m1', visem(v, k === 0)]).concat(['m1', null]);
+  if (dauer / folge.length < 45) folge = silben.map((v, k) => visem(v, k === 0)).concat([null]); // bei hohem Tempo nur die Vokalformen
+  const schritt = dauer / folge.length;
+  mundUhren.set(ava, folge.map((v, k) => setTimeout(() => { const f = form(ava, v); if (f) ava.dataset.f = f; else delete ava.dataset.f; }, k * schritt)));
+}
+function schweigen() { mundUhren.forEach(u => u.forEach(clearTimeout)); mundUhren.clear(); document.querySelectorAll('.ava[data-f]').forEach(a => delete a.dataset.f); }
+// Blinzeln im Ruhezustand: im Schnitt alle drei Sekunden kurz die Augen zu, nie während der Mund sich bewegt
+setInterval(() => document.querySelectorAll('.ava').forEach(a => {
+  if (!a.querySelector('.f-blink') || a.dataset.f || Math.random() > .12) return;
+  a.dataset.f = 'blink'; setTimeout(() => { if (a.dataset.f === 'blink') delete a.dataset.f; }, 140);
+}), 400);
+
+function laden(id) {
+  clearTimeout(uhr); clearInterval(wortUhr);
+  document.getElementById('sitzung-js')?.remove(); window.LR_SESSION = null;
+  const sc = document.createElement('script'); sc.id = 'sitzung-js';
+  sc.src = '../sessions/' + encodeURIComponent(id) + '.js?' + Date.now();
+  sc.onload = () => start(window.LR_SESSION);
+  sc.onerror = () => leer(`Sitzung <code>${esc(id)}</code> nicht gefunden. <code>node scripts/sitzung.mjs ${esc(id)}</code> ausführen.`);
+  document.body.appendChild(sc);
+  history.replaceState(null, '', '#' + id);
+}
+function leer(html) {
+  $('#runde').innerHTML = `<div class="leer"><div>${html}</div></div>`; $('#rede').hidden = $('#steuer').hidden = true;
+}
+
+function start(sitzung) {
+  S = sitzung; i = 0;
+  F = FORMATE[S.format] || FORMATE.investoren; Object.assign(PH, { angebote: F.angebote, verhandlung: F.verhandlung });
+  $('#marke').textContent = S.marke ?? F.marke; document.title = S.marke ?? F.marke;
+  const RV = window.LR_RUECKVERGLEICH, rvPasst = RV && S.panel.every(p => RV.mitglieder.includes(p.slug));
+  $('#treffer').hidden = !rvPasst;
+  if (rvPasst) { $('#treffer').textContent = `Rückvergleich: ${RV.ergebnis_richtig}/${RV.faelle} Pitches richtig`; $('#treffer').title = `${RV.entscheidungen_richtig} von ${RV.entscheidungen} Einzelentscheidungen wie im Original (Regel „immer Nein“: ${RV.basis_entscheidungen}) · Stand ${RV.stand}`; }
+  steps = [{ phase: 'pitch', sprecher: 'gruender', an: null, text: S.pitch.text }, ...S.beitraege, { phase: 'urteil' }];
+  $('#pitchkopf').innerHTML = `<h1>${esc(S.titel)}</h1><span class="wer">${esc(S.pitch.gruender)} · ${esc(S.datum)}</span>
+    ${S.pitch.forderung ? `<span class="forderung">Forderung ${kond(S.pitch.forderung)}</span>` : ''}${S.vorher ? `<span class="wv">Wiedervorlage vom ${esc(IDX.find(x => x.id === S.vorher)?.datum ?? S.vorher)}</span>` : ''}`;
+  const n = S.panel.length;
+  $('#runde').innerHTML = '<svg class="faeden" id="faeden"></svg>' + S.panel.map((p, k) => {
+    const x = n === 1 ? 50 : 10 + k * 80 / (n - 1), hub = 1 - ((x - 50) / 40) ** 2;
+    return `<div class="sitz" id="sitz-${p.slug}" style="left:${x}%;top:${Math.round(56 - 52 * hub)}px">
+      <div class="ava">${L[p.slug] ? `<img src="avatare/${p.slug}.png" alt="${esc(name(p.slug))}" onerror="this.outerHTML='<span class=&quot;init&quot;>${initialen(p.slug)}</span>'">${(L[p.slug].frames || []).map(v => `<img class="f f-${v}" src="avatare/${p.slug}-${v}.png" alt="">`).join('')}` : `<span class="init">${initialen(p.slug)}</span>`}<span class="stempel">${F.stempel}</span></div>
+      <div class="schild"><b>${esc(name(p.slug))}</b><i>${esc(L[p.slug]?.etikett || '')}</i><span class="chip" id="chip-${p.slug}">hört zu</span></div></div>`;
+  }).join('') + `<div class="gruender" id="sitz-gruender"><span class="punkt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>${esc(S.pitch.gruender)}</div>`;
+  $('#rede').hidden = $('#steuer').hidden = false;
+  const da = [...new Set(steps.map(s => s.phase))];
+  $('#phasen').innerHTML = da.map(p => `<button data-phase="${p}">${PH[p]}</button>`).join('');
+  $('#phasen').onclick = e => { const p = e.target.closest('button')?.dataset.phase; if (p) zeige(steps.findIndex(s => s.phase === p)); };
+  zeige(0);
+}
+
+function stand(bis) {
+  const st = Object.fromEntries(S.panel.map(p => [p.slug, {}]));
+  for (const s of steps.slice(0, bis + 1)) {
+    const z = st[s.sprecher]; if (!z) continue;
+    if (s.haltung) Object.assign(z, { status: s.haltung.status, wert: s.haltung.wert ?? z.wert });
+    if (s.angebot) z.angebot = s.angebot;
+  }
+  return st;
+}
+function chipText(z) {
+  if (z.status === 'angebot' && z.angebot) return z.angebot.betrag == null ? F.ja : `${F.ja} · ${kond(z.angebot)}`;
+  if (z.status === 'raus') return F.raus;
+  if (z.status === 'interessiert') return `Interessiert · ${z.wert ?? '–'}`;
+  if (z.status === 'skeptisch') return `Skeptisch · ${z.wert ?? '–'}`;
+  return 'hört zu';
+}
+function was(s) {
+  const an = s.an && s.an !== 'gruender' ? name(s.an) : null;
+  switch (s.phase) {
+    case 'pitch': return 'pitcht';
+    case 'eindruck': return 'erster Eindruck';
+    case 'fragen': return s.sprecher === 'gruender' ? `antwortet ${an ?? ''}` : 'fragt den Gründer';
+    case 'schlagabtausch': return an ? `widerspricht ${an}` : 'widerspricht';
+    case 'angebote': return s.haltung?.status === 'raus' ? F.wasRaus : s.angebot?.mit?.length ? `bietet mit ${s.angebot.mit.map(name).join(', ')}` : F.wasJa;
+    case 'verhandlung': return s.sprecher === 'gruender' ? `verhandelt mit ${an ?? ''}` : s.haltung?.status === 'raus' ? 'zieht zurück' : 'antwortet';
+  }
+  return '';
+}
+
+function faden(von, nach, gold) {
+  const r = $('#runde').getBoundingClientRect(), a = $('#sitz-' + von), b = $('#sitz-' + nach);
+  if (!a || !b) return '';
+  const m = el => { const q = (el.querySelector('.ava') || el).getBoundingClientRect(); return [q.left - r.left + q.width / 2, q.top - r.top + (el.classList.contains('gruender') ? 0 : q.height * .2)]; };
+  const [x1, y1] = m(a), [x2, y2] = m(b), cy = Math.min(y1, y2) - 70 - Math.abs(x2 - x1) * .12;
+  return `<path class="faden ${gold ? 'gold' : ''}" d="M${x1},${y1} Q${(x1 + x2) / 2},${cy} ${x2},${y2}"/>`;
+}
+
+function zeige(k) {
+  clearTimeout(uhr); clearInterval(wortUhr); schweigen();
+  i = Math.max(0, Math.min(k, steps.length - 1));
+  const s = steps[i];
+  if (s.phase === 'urteil') { malen(i - 1, null); urteil(); return; }
+  $('#urteil').hidden = true;
+  malen(i, s);
+  const woerter = s.text.split(/\s+/);
+  $('#rede').innerHTML = `<div class="kopf">${bild(s.sprecher)}<b>${esc(name(s.sprecher))}</b>${s.annahme ? '<span class="tag">Annahme</span>' : ''}<span class="was">${esc(was(s))}</span></div>
+    <div class="text">${woerter.map(w => `<span>${esc(w)} </span>`).join('')}</div>
+    ${s.angebot && s.haltung?.status !== 'raus' ? `<div class="angebot"><span class="summe">${kond(s.angebot)}</span>${s.angebot.bedingungen?.length ? `<ul>${s.angebot.bedingungen.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}</div>` : ''}
+    ${s.kernpunkt ? `<div class="kern">→ ${esc(s.kernpunkt)}</div>` : ''}`;
+  const spans = [...document.querySelectorAll('#rede .text span')];
+  const ava = $('#sitz-' + s.sprecher + ' .ava');
+  const takt = 1000 / (WPS * tempo);
+  let w = 0;
+  const weiter = () => {
+    if (w >= spans.length) { clearInterval(wortUhr); schweigen(); return; }
+    const wort = woerter[w]; spans[w++].classList.add('an');
+    if (ava) sprich(ava, wort, takt * .92);
+  };
+  if (spielt) { weiter(); wortUhr = setInterval(weiter, takt); uhr = setTimeout(() => zeige(i + 1), (woerter.length / WPS + 1.4) * 1000 / tempo); }
+  else spans.forEach(sp => sp.classList.add('an'));
+  $('#rest').textContent = `${steps.length - 1 - i} bis zum Urteil`;
+}
+
+function malen(k, s) {
+  const st = stand(k);
+  for (const p of S.panel) {
+    const el = $('#sitz-' + p.slug), z = st[p.slug];
+    el.classList.toggle('raus', z.status === 'raus');
+    el.classList.toggle('spricht', s?.sprecher === p.slug);
+    el.classList.toggle('ziel', !!s && s.an === p.slug);
+    const c = $('#chip-' + p.slug); c.textContent = chipText(z); c.className = 'chip ' + (z.status || '');
+  }
+  $('#sitz-gruender').classList.toggle('spricht', s?.sprecher === 'gruender');
+  $('#runde').classList.toggle('redet', !!s);
+  $('#faeden').innerHTML = s?.an ? faden(s.sprecher, s.an, !!s.angebot) : '';
+  const akt = (s || steps[steps.length - 1]).phase, reihe = [...$('#phasen').children].map(b => b.dataset.phase), pos = reihe.indexOf(akt);
+  [...$('#phasen').children].forEach((b, n) => { b.classList.toggle('aktiv', n === pos); b.classList.toggle('erledigt', n < pos); });
+  let html = '', ph = '';
+  steps.slice(0, k + 1).forEach((t, n) => {
+    if (t.phase !== ph) { ph = t.phase; html += `<h2>${PH[ph]}</h2>`; }
+    const rechts = t.an && t.an !== 'gruender' ? 'vs ' + name(t.an).split(' ').pop() : t.phase === 'angebote' ? (t.haltung?.status === 'raus' ? F.raus : F.ja) : '';
+    html += `<button class="notiz ${n === k && s ? 'jetzt' : ''}" data-n="${n}"><span class="z1">${bild(t.sprecher)}${esc(name(t.sprecher))}<i>${esc(rechts)}</i></span><p>${esc(t.kernpunkt || t.text)}</p></button>`;
+  });
+  const m = $('#mitschrift'); m.innerHTML = html; m.scrollTop = m.scrollHeight;
+  m.onclick = e => { const n = e.target.closest('.notiz')?.dataset.n; if (n != null) zeige(+n); };
+  $('#spiel').textContent = spielt ? 'Pause' : 'Abspielen';
+  document.querySelectorAll('[data-tempo]').forEach(b => b.classList.toggle('an', +b.dataset.tempo === tempo));
+}
+
+function urteil() {
+  const u = S.urteil, d = u.deal;
+  $('#urteil').innerHTML = `<div class="karte" role="dialog" aria-label="Urteil">
+    <span class="ergebnis ${u.ergebnis}">${F.ergebnis[u.ergebnis]}</span>
+    ${d ? `<div class="dealzeile"><span class="koepfe">${d.mitglieder.map(l => `<img src="avatare/${l}.png" alt="${esc(name(l))}">`).join('')}</span>
+      <span>${d.mitglieder.map(name).map(esc).join(' &amp; ')}</span><span class="summe">${kond(d)}</span></div>
+      ${d.bedingungen?.length ? `<h3>Bedingungen</h3><ul>${d.bedingungen.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}` : ''}
+    <h3>Begründung</h3><p>${esc(u.begruendung)}</p>
+    ${u.einwaende?.length ? `<h3>Die stärksten Einwände</h3>${u.einwaende.map(e => `<div class="einwand">${bild(e.von)}<div><p><b>${esc(name(e.von))}:</b> ${esc(e.text)}${e.status ? `<span class="status ${e.status}">${{ ausgeraeumt: 'ausgeräumt', offen: 'noch offen', neu: 'neu' }[e.status] ?? esc(e.status)}</span>` : ''}</p>${e.ausraeumen ? `<p class="weg">${esc(e.ausraeumen)}</p>` : ''}</div></div>`).join('')}` : ''}
+    ${u.naechster_schritt ? `<h3>Nächster Schritt</h3><div class="schritt">${esc(u.naechster_schritt)}</div>` : ''}
+    <div class="knoepfe"><button class="primaer" id="nochmal">Nochmal ansehen</button><button id="zu">Schließen</button></div>
+    <p class="hinweis">${F.hinweis}${S.kosten ? ` · ${S.kosten.agenten} Agentenaufrufe, ${new Intl.NumberFormat('de-DE').format(S.kosten.tokens)} Tokens` : ''}</p></div>`;
+  $('#urteil').hidden = false;
+  $('#nochmal').onclick = () => { spielt = true; zeige(0); };
+  $('#zu').onclick = () => { $('#urteil').hidden = true; };
+  $('#rest').textContent = 'Urteil';
+}
+
+$('#vor').onclick = () => zeige(i + 1);
+$('#zurueck').onclick = () => zeige(i - 1);
+$('#spiel').onclick = () => { spielt = !spielt; zeige(i); };
+$('#springen').onclick = () => zeige(steps.length - 1);
+document.querySelectorAll('[data-tempo]').forEach(b => b.onclick = () => { tempo = +b.dataset.tempo; zeige(i); });
+addEventListener('keydown', e => {
+  if (e.target.matches('select')) return;
+  if (e.key === ' ') { e.preventDefault(); $('#spiel').click(); }
+  if (e.key === 'ArrowRight') zeige(i + 1);
+  if (e.key === 'ArrowLeft') zeige(i - 1);
+  if (e.key === 'Escape') $('#urteil').hidden = true;
+});
+addEventListener('resize', () => { if (S) { const u = steps[i].phase === 'urteil'; malen(u ? i - 1 : i, u ? null : steps[i]); } });
+
+$('#wahl').innerHTML = IDX.map(s => `<option value="${esc(s.id)}">${esc(s.datum)} · ${esc(s.titel)}</option>`).join('');
+$('#wahl').onchange = e => laden(e.target.value);
+const wunsch = decodeURIComponent(location.hash.slice(1)) || IDX[0]?.id;
+if (wunsch) { $('#wahl').value = wunsch; laden(wunsch); }
+else leer('Noch keine Sitzung. Starte den Rat in Claude Code mit dem Skill.');
+</script>
+</body>
+</html>

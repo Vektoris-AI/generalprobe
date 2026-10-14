@@ -1,0 +1,9 @@
+[
+  {
+    "vorhaben": "Wochenend-Lieferung für Stammkunden",
+    "beschreibung": "Beschreibe das Vorhaben so, wie es damals vor der Entscheidung aussah – ohne den Ausgang. Was, für wen, welche Zahlen lagen vor?",
+    "mitglieder": ["vertrieb", "kaufmann", "kundin", "meister", "skeptikerin"],
+    "ergebnis": "kein_deal",
+    "hinweis": "ergebnis: deal = wurde umgesetzt und hat sich gelohnt, kein_deal = verworfen oder gescheitert. Optional je Mitglied: \"entscheidungen\": {\"kaufmann\": \"nein\"}."
+  }
+]

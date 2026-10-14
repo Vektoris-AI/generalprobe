@@ -1,0 +1,5 @@
+.env
+.DS_Store
+viewer/avatare/*-roh.png
+scripts/avatar-jobs/
+sessions/*.verlauf.txt
