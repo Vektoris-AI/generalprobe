@@ -97,6 +97,17 @@
   .rede .text span { opacity: .22; transition: opacity .18s; }
   .rede .text span.an { opacity: 1; }
   .rede .kern { margin-top: 10px; font: 12px var(--mono); color: var(--fg-3); }
+  /* Prüfsteine: woraus das Urteil entsteht */
+  .ps { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font: 11.5px var(--mono); color: var(--fg-2); }
+  .ps span { padding: 2px 8px; border-radius: 99px; background: rgba(148, 163, 184, .1); }
+  .ps span.tief { color: var(--rot); background: var(--rot-soft); } .ps span.hoch { color: var(--cyan); background: var(--cyan-soft); }
+  .ps b { font-weight: 600; color: var(--fg); } .ps i { font-style: normal; color: var(--fg-3); }
+  .ps span.opt { border: 1px solid var(--line-2); background: none; }
+  .stufe { display: inline-block; margin-left: 12px; font: 600 15px var(--sans); letter-spacing: .06em; text-transform: uppercase; padding: 3px 10px; border-radius: var(--r3); vertical-align: 6px; }
+  .stufe.los, .stufe.los_mit_bedingungen { color: var(--gold); background: var(--gold-soft); } .stufe.umbauen, .stufe.warten { color: var(--cyan); background: var(--cyan-soft); } .stufe.lassen { color: var(--rot); background: var(--rot-soft); }
+  .karte table { width: 100%; border-collapse: collapse; font-size: 13.5px; } .karte th, .karte td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  .karte th { font: 500 11px var(--mono); color: var(--fg-3); text-transform: uppercase; letter-spacing: .06em; }
+  .wertung { font: 500 13px var(--mono); color: var(--fg-2); margin-top: 10px; }
   .angebot { margin-top: 12px; display: flex; gap: 16px; align-items: flex-start; padding: 10px 14px; border-radius: var(--r2); border: 1px solid rgba(251, 191, 36, .35); background: var(--gold-soft); }
   .angebot .summe { font: 600 20px var(--sans); color: var(--gold); white-space: nowrap; }
   .angebot ul { margin: 0; padding-left: 18px; color: var(--fg-2); font-size: 13.5px; }
@@ -146,6 +157,13 @@
   .treffer { font: 500 11px var(--mono); color: var(--cyan); border: 1px solid rgba(34, 211, 238, .35); border-radius: 99px; padding: 2px 9px; white-space: nowrap; }
   .status { font: 500 10px var(--mono); border-radius: 99px; padding: 1px 7px; margin-left: 6px; }
   .status.ausgeraeumt { color: var(--cyan); background: var(--cyan-soft); } .status.offen { color: var(--gold); background: var(--gold-soft); } .status.neu { color: var(--fg-2); background: rgba(148, 163, 184, .1); }
+  /* Live: laufende Sitzung, die Ansicht lädt neue Beiträge nach */
+  .live { display: inline-flex; align-items: center; gap: 6px; font: 500 11px var(--mono); color: var(--rot); border: 1px solid rgba(251, 113, 133, .45); border-radius: 99px; padding: 2px 9px; }
+  .live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--rot); animation: puls 1.4s ease-in-out infinite; }
+  @keyframes puls { 50% { opacity: .25; } }
+  .rede .warte { color: var(--fg-2); font-size: 17px; }
+  .rede .warte .punkte span { display: inline-block; animation: puls 1.2s infinite; } .rede .warte .punkte span:nth-child(2) { animation-delay: .2s; } .rede .warte .punkte span:nth-child(3) { animation-delay: .4s; }
+  .phasen button.kommt { opacity: .45; cursor: default; }
   .leer { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--fg-2); }
   .leer code { font: 13px var(--mono); color: var(--cyan); }
 
@@ -202,6 +220,7 @@
 const $ = s => document.querySelector(s);
 const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const euro = n => new Intl.NumberFormat('de-DE').format(n) + ' €';
+const dez = n => n == null ? '–' : new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 }).format(n);
 const kond = a => a.betrag == null ? F.ja : a.anteil ? `${euro(a.betrag)} für ${a.anteil} %` : `${euro(a.betrag)} ohne Anteil`;
 // Zwei Formate: „investoren" (Angebote mit Betrag und Anteil) und „beirat" (Votum: Nein oder Ja, wenn …)
 const FORMATE = {
@@ -212,9 +231,12 @@ const FORMATE = {
 };
 let F = FORMATE.investoren;
 const PH = { pitch: 'Pitch', eindruck: 'Erster Eindruck', fragen: 'Kreuzverhör', schlagabtausch: 'Schlagabtausch', angebote: 'Angebote', verhandlung: 'Verhandlung', urteil: 'Urteil' };
+const REIHE = Object.keys(PH);
 const WPS = 3.2; // Lesetempo bei 1×: Wörter pro Sekunde
 const L = window.LR_RAT || {}, IDX = window.LR_INDEX || [];
-let S, steps = [], i = 0, spielt = true, tempo = 1, uhr, wortUhr;
+let S, steps = [], i = 0, spielt = true, tempo = 1, uhr, wortUhr, liveUhr;
+// Am Ende steht das Urteil; solange die Sitzung live läuft, ein Warte-Schritt, der den Stand der Runde zeigt
+const baueSteps = () => [{ phase: 'pitch', sprecher: 'gruender', an: null, text: S.pitch.text }, ...S.beitraege, { phase: S.live ? 'warten' : 'urteil' }];
 
 const name = s => s === 'gruender' ? S.pitch.gruender : s === 'moderator' ? 'Moderation' : (L[s]?.name || s);
 const initialen = s => name(s).split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -242,14 +264,43 @@ setInterval(() => document.querySelectorAll('.ava').forEach(a => {
 }), 400);
 
 function laden(id) {
-  clearTimeout(uhr); clearInterval(wortUhr);
+  clearTimeout(uhr); clearInterval(wortUhr); clearInterval(liveUhr);
   document.getElementById('sitzung-js')?.remove(); window.LR_SESSION = null;
   const sc = document.createElement('script'); sc.id = 'sitzung-js';
   sc.src = '../sessions/' + encodeURIComponent(id) + '.js?' + Date.now();
-  sc.onload = () => start(window.LR_SESSION);
+  sc.onload = () => { start(window.LR_SESSION); if (S.live) liveUhr = setInterval(() => nachladen(id), 2500); };
   sc.onerror = () => leer(`Sitzung <code>${esc(id)}</code> nicht gefunden. <code>node scripts/sitzung.mjs ${esc(id)}</code> ausführen.`);
   document.body.appendChild(sc);
   history.replaceState(null, '', '#' + id);
+}
+// Live: die Sitzungsdatei neu laden; neue Beiträge hängen sich an, wer am Ende wartet, sieht sie sofort
+function nachladen(id) {
+  const sc = document.createElement('script');
+  sc.src = '../sessions/' + encodeURIComponent(id) + '.js?' + Date.now();
+  sc.onload = () => { sc.remove(); const neu = window.LR_SESSION; if (neu?.id === S.id) aktualisieren(neu); };
+  sc.onerror = () => sc.remove();
+  document.body.appendChild(sc);
+}
+function aktualisieren(neu) {
+  if (JSON.stringify(neu) === JSON.stringify(S)) return;
+  const wartet = steps[i]?.phase === 'warten';
+  S = neu; steps = baueSteps(); phasenLeiste(); kopf();
+  if (!S.live) clearInterval(liveUhr);
+  if (wartet) { spielt = true; zeige(i); }
+  else $('#rest').textContent = restText();
+}
+const restText = () => S.live ? `${steps.length - 1 - i} bis zum Live-Stand` : `${steps.length - 1 - i} bis zum Urteil`;
+function kopf() {
+  $('#pitchkopf').innerHTML = `<h1>${esc(S.titel)}</h1><span class="wer">${esc(S.pitch.gruender)} · ${esc(S.datum)}</span>
+    ${S.pitch.forderung ? `<span class="forderung">Forderung ${kond(S.pitch.forderung)}</span>${S.pitch.forderung.anteil > 0 ? `<span class="forderung" title="Post-Money = Betrag ÷ Anteil">Bewertung ${euro(Math.round(S.pitch.forderung.betrag / S.pitch.forderung.anteil * 100))}</span>` : ''}` : ''}${S.vorher ? `<span class="wv">Wiedervorlage vom ${esc(IDX.find(x => x.id === S.vorher)?.datum ?? S.vorher)}</span>` : ''}${S.live ? '<span class="live">LIVE</span>' : ''}`;
+  $('#springen').textContent = S.live ? 'Zum Live-Stand' : 'Zum Urteil';
+}
+function phasenLeiste() {
+  const da = new Set(steps.map(s => s.phase));
+  // Live: die laufende und die noch kommenden Phasen schon zeigen, aber nicht anklickbar
+  const reihe = S.live ? REIHE.filter(p => da.has(p) || REIHE.indexOf(p) <= REIHE.indexOf(S.live_phase ?? 'pitch') || ['angebote', 'urteil'].includes(p)) : [...da];
+  $('#phasen').innerHTML = reihe.map(p => `<button data-phase="${p}" class="${da.has(p) ? '' : 'kommt'}">${PH[p]}</button>`).join('');
+  $('#phasen').onclick = e => { const p = e.target.closest('button')?.dataset.phase, n = steps.findIndex(s => s.phase === p); if (n >= 0) zeige(n); };
 }
 function leer(html) {
   $('#runde').innerHTML = `<div class="leer"><div>${html}</div></div>`; $('#rede').hidden = $('#steuer').hidden = true;
@@ -262,9 +313,7 @@ function start(sitzung) {
   const RV = window.LR_RUECKVERGLEICH, rvPasst = RV && S.panel.every(p => RV.mitglieder.includes(p.slug));
   $('#treffer').hidden = !rvPasst;
   if (rvPasst) { $('#treffer').textContent = `Rückvergleich: ${RV.ergebnis_richtig}/${RV.faelle} Pitches richtig`; $('#treffer').title = `${RV.entscheidungen_richtig} von ${RV.entscheidungen} Einzelentscheidungen wie im Original (Regel „immer Nein“: ${RV.basis_entscheidungen}) · Stand ${RV.stand}`; }
-  steps = [{ phase: 'pitch', sprecher: 'gruender', an: null, text: S.pitch.text }, ...S.beitraege, { phase: 'urteil' }];
-  $('#pitchkopf').innerHTML = `<h1>${esc(S.titel)}</h1><span class="wer">${esc(S.pitch.gruender)} · ${esc(S.datum)}</span>
-    ${S.pitch.forderung ? `<span class="forderung">Forderung ${kond(S.pitch.forderung)}</span>` : ''}${S.vorher ? `<span class="wv">Wiedervorlage vom ${esc(IDX.find(x => x.id === S.vorher)?.datum ?? S.vorher)}</span>` : ''}`;
+  steps = baueSteps(); kopf();
   const n = S.panel.length;
   $('#runde').innerHTML = '<svg class="faeden" id="faeden"></svg>' + S.panel.map((p, k) => {
     const x = n === 1 ? 50 : 10 + k * 80 / (n - 1), hub = 1 - ((x - 50) / 40) ** 2;
@@ -273,9 +322,7 @@ function start(sitzung) {
       <div class="schild"><b>${esc(name(p.slug))}</b><i>${esc(L[p.slug]?.etikett || '')}</i><span class="chip" id="chip-${p.slug}">hört zu</span></div></div>`;
   }).join('') + `<div class="gruender" id="sitz-gruender"><span class="punkt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>${esc(S.pitch.gruender)}</div>`;
   $('#rede').hidden = $('#steuer').hidden = false;
-  const da = [...new Set(steps.map(s => s.phase))];
-  $('#phasen').innerHTML = da.map(p => `<button data-phase="${p}">${PH[p]}</button>`).join('');
-  $('#phasen').onclick = e => { const p = e.target.closest('button')?.dataset.phase; if (p) zeige(steps.findIndex(s => s.phase === p)); };
+  phasenLeiste();
   zeige(0);
 }
 
@@ -291,8 +338,8 @@ function stand(bis) {
 function chipText(z) {
   if (z.status === 'angebot' && z.angebot) return z.angebot.betrag == null ? F.ja : `${F.ja} · ${kond(z.angebot)}`;
   if (z.status === 'raus') return F.raus;
-  if (z.status === 'interessiert') return `Interessiert · ${z.wert ?? '–'}`;
-  if (z.status === 'skeptisch') return `Skeptisch · ${z.wert ?? '–'}`;
+  if (z.status === 'interessiert') return `Interessiert · ${dez(z.wert)}`;
+  if (z.status === 'skeptisch') return `Skeptisch · ${dez(z.wert)}`;
   return 'hört zu';
 }
 function was(s) {
@@ -306,6 +353,18 @@ function was(s) {
     case 'verhandlung': return s.sprecher === 'gruender' ? `verhandelt mit ${an ?? ''}` : s.haltung?.status === 'raus' ? 'zieht zurück' : 'antwortet';
   }
   return '';
+}
+
+// Prüfsteine eines Beitrags: Name und Wert je Prüfstein, Schnitt, K.O., Bewegung oder angewandte Regel
+function psZeile(s) {
+  if (!s.pruefsteine && !s.regel) return '';
+  const namen = L[s.sprecher]?.pruefsteine ?? [];
+  const teile = s.pruefsteine ? ['p1', 'p2', 'p3', 'p4'].map((k, n) => { const p = s.pruefsteine[k]; if (!p) return ''; return `<span class="${p.wert <= 3 ? 'tief' : p.wert >= 7 ? 'hoch' : ''}" title="${esc(p.grund || '')}${p.herkunft && p.herkunft !== 'pitch' ? ' (' + esc(p.herkunft) + ')' : ''}">${esc(namen[n] || k.toUpperCase())} ${p.wert}</span>`; }).join('') + `<b>Schnitt ${dez(s.schnitt)}</b>` : '';
+  const ko = s.ko ? `<span class="tief">K.O.: ${esc(s.ko)}</span>` : '';
+  const bew = s.bewegt && s.bewegt !== 'nein' ? `<i>bewegt: ${esc(s.bewegt)}</i>` : '';
+  const reg = s.regel ? `<i>Regel: ${esc(s.regel)}</i>` : '';
+  const opt = s.optionen ? Object.entries(s.optionen).map(([k, v]) => `<span class="opt ${v <= 3 ? 'tief' : v >= 7 ? 'hoch' : ''}" title="${esc((S.optionen ?? []).find(o => o.id === k)?.text ?? '')}">Option ${esc(k)} ${v}${s.empfehlung === k ? ' ★' : ''}</span>`).join('') : '';
+  return `<div class="ps">${teile}${ko}${opt}${bew}${reg}</div>`;
 }
 
 function faden(von, nach, gold) {
@@ -322,12 +381,19 @@ function zeige(k) {
   const s = steps[i];
   if (s.phase === 'urteil') { malen(i - 1, null); urteil(); return; }
   $('#urteil').hidden = true;
+  if (s.phase === 'warten') {
+    malen(i - 1, null);
+    $('#rede').innerHTML = `<div class="kopf"><span class="live">LIVE</span><span class="was">${esc(PH[S.live_phase] ?? '')}</span></div>
+      <div class="text warte">${esc(S.live_status || 'Die Runde berät')} <span class="punkte"><span>.</span><span>.</span><span>.</span></span></div>`;
+    $('#rest').textContent = 'wartet auf den nächsten Beitrag';
+    return;
+  }
   malen(i, s);
   const woerter = s.text.split(/\s+/);
   $('#rede').innerHTML = `<div class="kopf">${bild(s.sprecher)}<b>${esc(name(s.sprecher))}</b>${s.annahme ? '<span class="tag">Annahme</span>' : ''}<span class="was">${esc(was(s))}</span></div>
     <div class="text">${woerter.map(w => `<span>${esc(w)} </span>`).join('')}</div>
-    ${s.angebot && s.haltung?.status !== 'raus' ? `<div class="angebot"><span class="summe">${kond(s.angebot)}</span>${s.angebot.bedingungen?.length ? `<ul>${s.angebot.bedingungen.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}</div>` : ''}
-    ${s.kernpunkt ? `<div class="kern">→ ${esc(s.kernpunkt)}</div>` : ''}`;
+    ${s.angebot && s.haltung?.status !== 'raus' ? `<div class="angebot"><span class="summe">${kond(s.angebot)}${s.bewertung ? `<br><small style="font-size:12px;color:var(--fg-2)">Bewertung ${euro(s.bewertung.post)}${s.bewertung.abschlag != null ? ` · Abschlag ${s.bewertung.abschlag} %` : ''}</small>` : ''}</span>${s.angebot.bedingungen?.length ? `<ul>${s.angebot.bedingungen.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}</div>` : ''}
+    ${s.kernpunkt ? `<div class="kern">→ ${esc(s.kernpunkt)}</div>` : ''}${psZeile(s)}`;
   const spans = [...document.querySelectorAll('#rede .text span')];
   const ava = $('#sitz-' + s.sprecher + ' .ava');
   const takt = 1000 / (WPS * tempo);
@@ -339,7 +405,7 @@ function zeige(k) {
   };
   if (spielt) { weiter(); wortUhr = setInterval(weiter, takt); uhr = setTimeout(() => zeige(i + 1), (woerter.length / WPS + 1.4) * 1000 / tempo); }
   else spans.forEach(sp => sp.classList.add('an'));
-  $('#rest').textContent = `${steps.length - 1 - i} bis zum Urteil`;
+  $('#rest').textContent = restText();
 }
 
 function malen(k, s) {
@@ -354,7 +420,7 @@ function malen(k, s) {
   $('#sitz-gruender').classList.toggle('spricht', s?.sprecher === 'gruender');
   $('#runde').classList.toggle('redet', !!s);
   $('#faeden').innerHTML = s?.an ? faden(s.sprecher, s.an, !!s.angebot) : '';
-  const akt = (s || steps[steps.length - 1]).phase, reihe = [...$('#phasen').children].map(b => b.dataset.phase), pos = reihe.indexOf(akt);
+  const akt = s ? s.phase : steps[i]?.phase === 'warten' ? (S.live_phase ?? steps[k].phase) : 'urteil', reihe = [...$('#phasen').children].map(b => b.dataset.phase), pos = reihe.indexOf(akt);
   [...$('#phasen').children].forEach((b, n) => { b.classList.toggle('aktiv', n === pos); b.classList.toggle('erledigt', n < pos); });
   let html = '', ph = '';
   steps.slice(0, k + 1).forEach((t, n) => {
@@ -371,15 +437,19 @@ function malen(k, s) {
 function urteil() {
   const u = S.urteil, d = u.deal;
   $('#urteil').innerHTML = `<div class="karte" role="dialog" aria-label="Urteil">
-    <span class="ergebnis ${u.ergebnis}">${F.ergebnis[u.ergebnis]}</span>
+    <span class="ergebnis ${u.ergebnis}">${F.ergebnis[u.ergebnis]}</span>${u.stufe ? `<span class="stufe ${u.stufe}">${{ los: 'Los', los_mit_bedingungen: 'Los mit Bedingungen', umbauen: 'Umbauen', warten: 'Warten', lassen: 'Lassen' }[u.stufe]}</span>` : ''}
+    ${u.wertung?.optionen ? `<h3>Optionen</h3><table><tr><th>Option</th><th>Schnitt</th><th>Spanne</th></tr>${Object.entries(u.wertung.optionen).map(([k, v]) => `<tr><td>${k === u.wertung.beste ? '<b>' : ''}${esc(k)}) ${esc((S.optionen ?? []).find(o => o.id === k)?.text ?? '')}${k === u.wertung.beste ? '</b>' : ''}</td><td>${dez(v.schnitt)}</td><td>${dez(v.spanne)}</td></tr>`).join('')}</table>${u.ausloeser ? `<p class="wertung">Warten auf: ${esc(u.ausloeser)}${u.datum ? ` (bis ${esc(u.datum)})` : ''}</p>` : ''}` : ''}
     ${d ? `<div class="dealzeile"><span class="koepfe">${d.mitglieder.map(l => `<img src="avatare/${l}.png" alt="${esc(name(l))}">`).join('')}</span>
       <span>${d.mitglieder.map(name).map(esc).join(' &amp; ')}</span><span class="summe">${kond(d)}</span></div>
       ${d.bedingungen?.length ? `<h3>Bedingungen</h3><ul>${d.bedingungen.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}` : ''}
+    ${u.wertung ? `<p class="wertung">Punktwert ${dez(u.wertung.punktwert)} von 10 · Spanne ${dez(u.wertung.spanne)} · Sicherheit ${dez(u.wertung.sicherheit)} von 5</p>
+      <h3>Scorecard</h3><table><tr><th>Mitglied</th><th>Gewicht</th><th>Start</th><th>Ende</th><th>Entscheidung</th></tr>${Object.entries(u.wertung.je).map(([k, v]) => `<tr><td>${esc(name(k))}</td><td>${v.gewicht}</td><td>${dez(v.start)}</td><td>${dez(v.ende)}</td><td>${v.entscheidung === 'raus' ? F.raus : v.entscheidung === 'angebot' ? F.ja : '–'}</td></tr>`).join('')}</table>` : ''}
+    ${u.bewertung ? `<h3>Bewertungs-Check</h3><p class="wertung">Deine Bewertung ${euro(u.bewertung.forderung.post)} (vor dem Investment ${euro(u.bewertung.forderung.pre)}) · ${u.bewertung.angebote.length ? `Angebote ${euro(u.bewertung.min)}–${euro(u.bewertung.max)} · Abschlag ${Math.min(...u.bewertung.angebote.map(x => x.abschlag))}–${Math.max(...u.bewertung.angebote.map(x => x.abschlag))} %` : 'kein Angebot mit Anteil'}</p>` : ''}
     <h3>Begründung</h3><p>${esc(u.begruendung)}</p>
     ${u.einwaende?.length ? `<h3>Die stärksten Einwände</h3>${u.einwaende.map(e => `<div class="einwand">${bild(e.von)}<div><p><b>${esc(name(e.von))}:</b> ${esc(e.text)}${e.status ? `<span class="status ${e.status}">${{ ausgeraeumt: 'ausgeräumt', offen: 'noch offen', neu: 'neu' }[e.status] ?? esc(e.status)}</span>` : ''}</p>${e.ausraeumen ? `<p class="weg">${esc(e.ausraeumen)}</p>` : ''}</div></div>`).join('')}` : ''}
     ${u.naechster_schritt ? `<h3>Nächster Schritt</h3><div class="schritt">${esc(u.naechster_schritt)}</div>` : ''}
     <div class="knoepfe"><button class="primaer" id="nochmal">Nochmal ansehen</button><button id="zu">Schließen</button></div>
-    <p class="hinweis">${F.hinweis}${S.kosten ? ` · ${S.kosten.agenten} Agentenaufrufe, ${new Intl.NumberFormat('de-DE').format(S.kosten.tokens)} Tokens` : ''}</p></div>`;
+    <p class="hinweis">${F.hinweis}${S.kosten ? ` · ${S.kosten.agenten} Agentenaufrufe, ${new Intl.NumberFormat('de-DE').format(S.kosten.tokens)} Tokens${S.kosten.usd ? `, rund ${dez(S.kosten.usd.gesamt)} $ zum API-Listenpreis` : ''}` : ''}</p></div>`;
   $('#urteil').hidden = false;
   $('#nochmal').onclick = () => { spielt = true; zeige(0); };
   $('#zu').onclick = () => { $('#urteil').hidden = true; };
@@ -398,10 +468,12 @@ addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') zeige(i - 1);
   if (e.key === 'Escape') $('#urteil').hidden = true;
 });
-addEventListener('resize', () => { if (S) { const u = steps[i].phase === 'urteil'; malen(u ? i - 1 : i, u ? null : steps[i]); } });
+addEventListener('resize', () => { if (S) { const u = ['urteil', 'warten'].includes(steps[i].phase); malen(u ? i - 1 : i, u ? null : steps[i]); } });
 
-$('#wahl').innerHTML = IDX.map(s => `<option value="${esc(s.id)}">${esc(s.datum)} · ${esc(s.titel)}</option>`).join('');
+$('#wahl').innerHTML = IDX.map(s => `<option value="${esc(s.id)}">${esc(s.datum)} · ${esc(s.titel)}${s.live ? ' · live' : ''}</option>`).join('');
 $('#wahl').onchange = e => laden(e.target.value);
+// Wechsel nur hinter dem # (z. B. neue Live-Sitzung) lädt die Sitzung neu
+addEventListener('hashchange', () => { const id = decodeURIComponent(location.hash.slice(1)); if (id && id !== S?.id) { $('#wahl').value = id; laden(id); } });
 const wunsch = decodeURIComponent(location.hash.slice(1)) || IDX[0]?.id;
 if (wunsch) { $('#wahl').value = wunsch; laden(wunsch); }
 else leer('Noch keine Sitzung. Starte den Rat in Claude Code mit dem Skill.');

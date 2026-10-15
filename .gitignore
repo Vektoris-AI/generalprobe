@@ -3,3 +3,7 @@
 viewer/avatare/*-roh.png
 scripts/avatar-jobs/
 sessions/*.verlauf.txt
+# Eigene Unterlagen enthalten echte Zahlen und bleiben lokal; im Repo liegt nur das erfundene Beispiel
+unterlagen/*
+!unterlagen/beispiel-*.md
+sessions/*.unterlagen.md

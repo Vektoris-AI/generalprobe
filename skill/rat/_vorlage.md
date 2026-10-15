@@ -33,3 +33,14 @@ Duzen oder Siezen, Satzlänge, Temperament, typische kurze Wendungen.
 
 ## Votum
 Wann sagt sie Ja, wann „Ja, wenn …", wann Nein – und welche Bedingungen stellt sie typischerweise?
+
+## So entscheide ich
+Vier Prüfsteine mit Ankern (0–3 / 4–6 / 7–8 / 9–10), dazu K.O.-Kriterien und blinde Flecken. Rechenweg und Entscheidungsregel stehen in `skill/urteilsregeln.md`.
+- **P1 Leitfrage** (zählt doppelt): woran man 0–3, 4–6, 7–8 und 9–10 erkennt.
+- **P2** zweites Kriterium aus „Worauf sie achtet", mit eigenen Ankern.
+- **P3 Preis und Nutzen:** nach den gemeinsamen Regeln.
+- **P4 Plan für mein Fachgebiet:** Gibt es für das Risiko in ihrem Bereich einen konkreten, prüfbaren Plan?
+
+**K.O.:** ein bis zwei Punkte aus den roten Flaggen, die sicher zu Nein führen.
+
+**Wo mein Blick danebenliegt:** Wann dieses Mitglied systematisch zu streng oder zu mild urteilt.

@@ -76,8 +76,10 @@ Alle fünf sagen Ja – aber keiner zum Lieferdienst, sondern alle zu einem klei
 
 **Die stärksten Einwände**
 
-- **Der Kaufmann:** Wagen und Fahrerin rechnen sich erst ab rund 19 Portionen am Tag, das Leasing bindet 16.200 €. → Erst schriftliche Bestellungen sammeln, dann leasen. Bis dahin die Testmorgen mit einem festen Höchstbetrag begrenzen.
-- **Der Meister:** Niemand im Plan belegt, packt und belädt morgens, die Backstube ist ab 3 Uhr voll. → Den Ablauf dreimal mit der Uhr messen und festhalten, wer dafür von seinem Platz weggeht.
-- **Die Skeptikerin:** Auch ein Gratis-Probemorgen löst Pflichten bei Hygiene, Allergenen und Haftung aus. → Vor dem ersten Morgen Versicherung und Hygienekonzept klären und mit jedem Testkunden kurz schriftlich festhalten, was gilt.
+- **Der Kaufmann**: Wagen und Fahrerin rechnen sich erst ab rund 19 Portionen am Tag, das Leasing bindet 16.200 €. → Erst schriftliche Bestellungen sammeln, dann leasen. Bis dahin die Testmorgen mit einem festen Höchstbetrag begrenzen.
+- **Der Meister**: Niemand im Plan belegt, packt und belädt morgens, die Backstube ist ab 3 Uhr voll. → Den Ablauf dreimal mit der Uhr messen und festhalten, wer dafür von seinem Platz weggeht.
+- **Die Skeptikerin**: Auch ein Gratis-Probemorgen löst Pflichten bei Hygiene, Allergenen und Haftung aus. → Vor dem ersten Morgen Versicherung und Hygienekonzept klären und mit jedem Testkunden kurz schriftlich festhalten, was gilt.
 
 **Nächster Schritt:** Diese Woche die drei Firmen anrufen, Preis und Kopfzahl nennen und zwei bezahlte Probemorgen vereinbaren. Parallel bei der Versicherung nachfragen. Kein Leasing unterschreiben.
+
+**Kosten:** 15 Agentenaufrufe, 478.083 Tokens

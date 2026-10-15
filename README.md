@@ -51,6 +51,35 @@ python3 -m http.server 8000
 
 und dann im Browser `http://localhost:8000/viewer/`.
 
+## Wie der Rat urteilt
+
+Alle Mitglieder rechnen nach denselben Regeln (`skill/urteilsregeln.md`), jedes mit eigenen Ankern im Abschnitt
+„So entscheide ich" seines Dossiers:
+
+- **Vier Prüfsteine** von 0 bis 10, der erste zählt doppelt. Daraus ergibt sich der Schnitt.
+- **Belegpflicht:** Was nur behauptet ist, bekommt höchstens 6, was fehlt, höchstens 4.
+- **K.O.-Kriterien** je Mitglied und eine feste Schwelle: Ja nur ab Schnitt 6,5.
+- **Optionen:** Nennst du mehrere Wege (immer auch „lassen"), bewertet jedes Mitglied jeden. Das Urteil endet
+  mit einer Stufe: los, los mit Bedingungen, umbauen, warten oder lassen.
+
+Die Regeln machen jedes Urteil nachvollziehbar: Du siehst, an welchem Prüfstein es hängt und welcher Beleg fehlt.
+Der Rat bleibt eine KI-Simulation. Er urteilt über das, was du ihm gibst, und sagt nicht voraus, was echte
+Menschen tun.
+
+## Unterlagen
+
+Der Pitch-Text hat höchstens 150 Wörter. Zahlen, Preise und Kosten gehören in Unterlagen, die jedes Mitglied
+vollständig liest, bevor es urteilt:
+
+```
+/generalprobe unterlagen: unterlagen/meine-firma.md Sollen wir einen Lieferdienst starten?
+```
+
+Vorlage ist `unterlagen/beispiel-baeckerei.md` (erfunden). Wichtig ist die **volle Kostenstruktur**, also auch
+Gehälter und ein Unternehmerlohn für dich selbst, sonst rechnet der Rat dein Vorhaben schöner, als es ist.
+Ohne Unterlagen rechnen die Mitglieder Kosten und Reichweite nicht selbst aus. Eigene Unterlagen bleiben per
+`.gitignore` auf deinem Rechner.
+
 ## Deinen eigenen Rat bauen
 
 1. `skill/rat/_vorlage.md` kopieren, als `skill/rat/<kurzname>.md` speichern und ausfüllen. Je genauer
@@ -72,7 +101,8 @@ Ohne Avatare zeigt die Bühne Initialen.
 
 ## Was der Rat außerdem kann
 
-- **Kosten sehen:** Unter jedem Urteil steht, wie viele Agenten liefen und wie viele Tokens das kostete.
+- **Kosten sehen:** Unter jedem Urteil steht, wie viele Agenten liefen, wie viele Tokens das waren und was das
+  zum API-Listenpreis ungefähr kostet (`scripts/kosten.mjs` rechnet aus den Protokollen von Claude Code).
 - **Wiedervorlage:** `/generalprobe wiedervorlage <sitzung>` – derselbe Rat prüft nach ein paar Wochen,
   welche Einwände ausgeräumt sind und welche noch offen.
 - **Film:** `viewer/film.html#<sitzung>&format=4x5` (oder `16x9`) spielt eine Sitzung als kurzen Clip auf der
@@ -86,8 +116,17 @@ Ohne Avatare zeigt die Bühne Initialen.
 
 - **Abstimmung** (Standard): Am Ende stimmt jedes Mitglied ab – Nein oder Ja unter Bedingungen. Gut für
   Entscheidungen, Angebote und Preise.
-- **Investoren**: `investoren` in den Aufruf schreiben und eine Forderung nennen („50.000 € für 10 %").
-  Dann machen die Mitglieder Angebote, und es wird verhandelt. Gut, um einen Pitch zu üben.
+- **Investoren**: Die Mitglieder machen Angebote, und es wird verhandelt. Gut, um einen Pitch oder eine
+  Finanzierungsrunde zu üben, bevor du vor echte Geldgeber gehst:
+
+  ```
+  /generalprobe investoren forderung: 50.000 € für 10 % unterlagen: unterlagen/meine-firma.md Wir bauen …
+  ```
+
+  Aus der Forderung wird deine Bewertung: 50.000 € für 10 % heißt 500.000 € nach dem Investment
+  (Post-Money) und 450.000 € davor (Pre-Money). Jedes Angebot zeigt dieselbe Rechnung und den Abschlag
+  auf deine Bewertung, das Urteil die Spanne aller Angebote. So siehst du, ob deine Bewertung im Rat trägt,
+  und kannst mehrere Forderungen gegeneinander testen. Suchst du kein Geld, schreib `forderung: keine`.
 
 ## Fair bleiben
 

@@ -14,6 +14,12 @@ window.LR_RAT = {
    "m3",
    "m4",
    "blink"
+  ],
+  "pruefsteine": [
+   "Geld zurück",
+   "Liquidität und Arbeitszeit",
+   "Preis und Nutzen",
+   "Plan für mein Fachgebiet"
   ]
  },
  "kundin": {
@@ -31,6 +37,12 @@ window.LR_RAT = {
    "m3",
    "m4",
    "blink"
+  ],
+  "pruefsteine": [
+   "Würde ich das kaufen",
+   "Aufwand des Wechsels",
+   "Preis und Nutzen",
+   "Plan für mein Fachgebiet"
   ]
  },
  "meister": {
@@ -48,6 +60,12 @@ window.LR_RAT = {
    "m3",
    "m4",
    "blink"
+  ],
+  "pruefsteine": [
+   "Wer macht die Arbeit",
+   "Wiederholbar und gut",
+   "Preis und Nutzen",
+   "Plan für mein Fachgebiet"
   ]
  },
  "skeptikerin": {
@@ -65,6 +83,12 @@ window.LR_RAT = {
    "m3",
    "m4",
    "blink"
+  ],
+  "pruefsteine": [
+   "Dürfen wir das",
+   "Der schlimmste Fall ist überlebbar",
+   "Preis und Nutzen",
+   "Plan für mein Fachgebiet"
   ]
  },
  "vertrieb": {
@@ -82,6 +106,12 @@ window.LR_RAT = {
    "m3",
    "m4",
    "blink"
+  ],
+  "pruefsteine": [
+   "Wer kauft das",
+   "Kanal und Abschluss",
+   "Preis und Nutzen",
+   "Plan für mein Fachgebiet"
   ]
  }
 };
