@@ -147,7 +147,7 @@
   .einwand img, .einwand .mini { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex: none; }
   .einwand p { margin: 0; }
   .einwand .weg { margin-top: 6px; color: var(--fg-2); font-size: 14px; }
-  .einwand .weg::before { content: 'So räumt ihr ihn aus: '; color: var(--cyan); }
+  .einwand .weg::before { content: attr(data-vor); color: var(--cyan); }
   .schritt { padding: 12px 14px; border-radius: var(--r2); background: var(--cyan-soft); border: 1px solid rgba(34, 211, 238, .3); }
   .hinweis { margin-top: 22px; font-size: 12px; color: var(--fg-3); }
   .knoepfe { display: flex; gap: 8px; margin-top: 18px; }
@@ -219,28 +219,96 @@
 <script>
 const $ = s => document.querySelector(s);
 const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-const euro = n => new Intl.NumberFormat('de-DE').format(n) + ' €';
-const dez = n => n == null ? '–' : new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 }).format(n);
-const kond = a => a.betrag == null ? F.ja : a.anteil ? `${euro(a.betrag)} für ${a.anteil} %` : `${euro(a.betrag)} ohne Anteil`;
-// Zwei Formate: „investoren" (Angebote mit Betrag und Anteil) und „beirat" (Votum: Nein oder Ja, wenn …)
-const FORMATE = {
-  investoren: { marke: 'Pitch-Runde', angebote: 'Angebote', verhandlung: 'Verhandlung', raus: 'Raus', stempel: 'RAUS', ja: 'Angebot', wasRaus: 'steigt aus', wasJa: 'macht ein Angebot',
-    ergebnis: { deal: 'DEAL', kein_deal: 'KEIN DEAL' }, hinweis: 'KI-Simulation auf Basis öffentlicher Quellen. Keine echten Aussagen der genannten Personen. Nur intern.' },
-  beirat: { marke: 'Generalprobe', angebote: 'Votum', verhandlung: 'Nachfassen', raus: 'Nein', stempel: 'NEIN', ja: 'Ja, wenn …', wasRaus: 'stimmt dagegen', wasJa: 'stimmt zu, wenn …',
-    ergebnis: { deal: 'GO', kein_deal: 'NO-GO' }, hinweis: 'KI-Simulation. Die Ratsmitglieder sind Rollen, keine echten Personen.' },
+// Oberflächentexte je Sprache: Sitzung mit "sprache": "en" → Englisch, sonst Deutsch (start() wählt).
+// Die Sitzungstexte selbst (Pitch, Beiträge, Urteil) kommen unverändert aus der Sitzung.
+// Je Sprache zwei Formate: „investoren" (Angebote mit Betrag und Anteil) und „beirat" (Votum: Nein oder Ja, wenn …)
+const TEXTE = {
+  de: {
+    lang: 'de', zahl: 'de-DE', geld: x => x + ' €', prozent: x => `${x} %`,
+    fuer: (b, a) => `${b} für ${a} %`, ohneAnteil: b => `${b} ohne Anteil`,
+    formate: {
+      investoren: { marke: 'Pitch-Runde', angebote: 'Angebote', verhandlung: 'Verhandlung', raus: 'Raus', stempel: 'RAUS', ja: 'Angebot', wasRaus: 'steigt aus', wasJa: 'macht ein Angebot', verhandelt: an => `verhandelt mit ${an}`,
+        ergebnis: { deal: 'DEAL', kein_deal: 'KEIN DEAL' }, hinweis: 'KI-Simulation auf Basis öffentlicher Quellen. Keine echten Aussagen der genannten Personen. Nur intern.' },
+      beirat: { marke: 'Generalprobe', angebote: 'Votum', verhandlung: 'Nachfassen', raus: 'Nein', stempel: 'NEIN', ja: 'Ja, wenn …', wasRaus: 'stimmt dagegen', wasJa: 'stimmt zu, wenn …', verhandelt: an => `verhandelt mit ${an}`,
+        ergebnis: { deal: 'GO', kein_deal: 'NO-GO' }, hinweis: 'KI-Simulation. Die Ratsmitglieder sind Rollen, keine echten Personen.' },
+    },
+    phasen: { pitch: 'Pitch', eindruck: 'Erster Eindruck', fragen: 'Kreuzverhör', schlagabtausch: 'Schlagabtausch', angebote: 'Angebote', verhandlung: 'Verhandlung', urteil: 'Urteil' },
+    // Kopfleiste, Steuerung, Mitschrift
+    sim: 'KI-Simulation', phasenNav: 'Phasen', wahl: 'Sitzung wählen', mitschrift: 'Mitschrift',
+    zurueck: '‹ Zurück', zurueckTitel: 'Zurück (←)', pause: 'Pause', abspielen: 'Abspielen', spielTitel: 'Abspielen/Pause (Leertaste)', vor: 'Weiter ›', vorTitel: 'Weiter (→)',
+    zumUrteil: 'Zum Urteil', zumLive: 'Zum Live-Stand', restUrteil: n => `${n} bis zum Urteil`, restLive: n => `${n} bis zum Live-Stand`, restWarten: 'wartet auf den nächsten Beitrag', restEnde: 'Urteil',
+    nichtGefunden: id => `Sitzung <code>${id}</code> nicht gefunden. <code>node scripts/sitzung.mjs ${id}</code> ausführen.`,
+    keineSitzung: 'Noch keine Sitzung. Starte den Rat in Claude Code mit dem Skill.',
+    rv: rv => `Rückvergleich: ${rv.ergebnis_richtig}/${rv.faelle} Pitches richtig`,
+    rvTitel: rv => `${rv.entscheidungen_richtig} von ${rv.entscheidungen} Einzelentscheidungen wie im Original (Regel „immer Nein“: ${rv.basis_entscheidungen}) · Stand ${rv.stand}`,
+    // Kopf, Bühne, Sprechfeld
+    forderung: 'Forderung', bewertung: 'Bewertung', postMoney: 'Post-Money = Betrag ÷ Anteil', wiedervorlage: d => `Wiedervorlage vom ${d}`,
+    moderation: 'Moderation', kuerzel: { gruender: 'G', moderator: 'M' }, kurz: n => n.split(' ').pop(),
+    hoertZu: 'hört zu', interessiert: 'Interessiert', skeptisch: 'Skeptisch',
+    pitcht: 'pitcht', eindruck: 'erster Eindruck', antwortet: an => `antwortet ${an}`, fragt: 'fragt den Gründer',
+    widerspricht: an => an ? `widerspricht ${an}` : 'widerspricht', bietetMit: wer => `bietet mit ${wer}`, zieht: 'zieht zurück', antwortetNur: 'antwortet',
+    annahme: 'Annahme', beraet: 'Die Runde berät', abschlag: 'Abschlag',
+    schnitt: 'Schnitt', ko: 'K.O.', bewegt: 'bewegt', regel: 'Regel', option: 'Option', herkunft: {},
+    // Urteil
+    urteil: 'Urteil', stufen: { los: 'Los', los_mit_bedingungen: 'Los mit Bedingungen', umbauen: 'Umbauen', warten: 'Warten', lassen: 'Lassen' },
+    optionen: 'Optionen', spanne: 'Spanne', wartenAuf: (was, bis) => `Warten auf: ${was}${bis ? ` (bis ${bis})` : ''}`, bedingungen: 'Bedingungen',
+    wertung: (p, sp, si) => `Punktwert ${p} von 10 · Spanne ${sp} · Sicherheit ${si} von 5`, scorecard: 'Scorecard', spalten: ['Mitglied', 'Gewicht', 'Start', 'Ende', 'Entscheidung'],
+    bewCheck: 'Bewertungs-Check', bewDeine: (post, pre) => `Deine Bewertung ${post} (vor dem Investment ${pre})`, bewAngebote: (min, max, a, b) => `Angebote ${min}–${max} · Abschlag ${a}–${b} %`, bewKeins: 'kein Angebot mit Anteil',
+    begruendung: 'Begründung', einwaende: 'Die stärksten Einwände', einwandStatus: { ausgeraeumt: 'ausgeräumt', offen: 'noch offen', neu: 'neu' }, weg: 'So räumt ihr ihn aus: ',
+    naechster: 'Nächster Schritt', nochmal: 'Nochmal ansehen', schliessen: 'Schließen',
+    kosten: k => ` · ${k.agenten} Agentenaufrufe, ${zahl(k.tokens)} Tokens${k.usd ? `, rund ${dez(k.usd.gesamt)} $ zum API-Listenpreis` : ''}`,
+  },
+  en: {
+    lang: 'en', zahl: 'en-US', geld: x => '$' + x, prozent: x => `${x}%`,
+    fuer: (b, a) => `${b} for ${a}%`, ohneAnteil: b => `${b} without equity`,
+    formate: {
+      investoren: { marke: 'Pitch round', angebote: 'Offers', verhandlung: 'Negotiation', raus: 'Out', stempel: 'OUT', ja: 'Offer', wasRaus: 'drops out', wasJa: 'makes an offer', verhandelt: an => `negotiates with ${an}`,
+        ergebnis: { deal: 'DEAL', kein_deal: 'NO DEAL' }, hinweis: 'AI simulation based on public sources. No real statements by the people named. Internal only.' },
+      beirat: { marke: 'Generalprobe', angebote: 'Vote', verhandlung: 'Follow-up', raus: 'No', stempel: 'NO', ja: 'Yes, if …', wasRaus: 'votes against', wasJa: 'agrees if …', verhandelt: an => `replies to ${an}`,
+        ergebnis: { deal: 'GO', kein_deal: 'NO-GO' }, hinweis: 'AI simulation. The council members are roles, not real people.' },
+    },
+    phasen: { pitch: 'Pitch', eindruck: 'First impression', fragen: 'Cross-examination', schlagabtausch: 'Debate', angebote: 'Offers', verhandlung: 'Negotiation', urteil: 'Verdict' },
+    sim: 'AI simulation', phasenNav: 'Phases', wahl: 'Choose session', mitschrift: 'Transcript',
+    zurueck: '‹ Back', zurueckTitel: 'Back (←)', pause: 'Pause', abspielen: 'Play', spielTitel: 'Play/Pause (Space)', vor: 'Next ›', vorTitel: 'Next (→)',
+    zumUrteil: 'Skip to verdict', zumLive: 'Skip to live', restUrteil: n => `${n} more until the verdict`, restLive: n => `${n} more until live`, restWarten: 'waiting for the next turn', restEnde: 'Verdict',
+    nichtGefunden: id => `Session <code>${id}</code> not found. Run <code>node scripts/sitzung.mjs ${id}</code>.`,
+    keineSitzung: 'No session yet. Start the council in Claude Code with the skill.',
+    rv: rv => `Backtest: ${rv.ergebnis_richtig}/${rv.faelle} pitches right`,
+    rvTitel: rv => `${rv.entscheidungen_richtig} of ${rv.entscheidungen} individual decisions as in the original (“always No” rule: ${rv.basis_entscheidungen}) · as of ${rv.stand}`,
+    forderung: 'Asking', bewertung: 'Valuation', postMoney: 'Post-money = amount ÷ equity', wiedervorlage: d => `Re-pitch of ${d}`,
+    moderation: 'Moderator', kuerzel: { gruender: 'F', moderator: 'M' }, kurz: n => /^the /i.test(n) ? n.slice(4) : n.split(' ').pop(), // „The Sales Lead“ → „Sales Lead“
+    hoertZu: 'listening', interessiert: 'Interested', skeptisch: 'Skeptical',
+    pitcht: 'pitches', eindruck: 'first impression', antwortet: an => `answers ${an}`, fragt: 'asks the founder',
+    widerspricht: an => an ? `pushes back on ${an}` : 'pushes back', bietetMit: wer => `offers jointly with ${wer}`, zieht: 'withdraws', antwortetNur: 'responds',
+    annahme: 'Assumption', beraet: 'The panel is deliberating', abschlag: 'Discount',
+    schnitt: 'Average', ko: 'Deal-breaker', bewegt: 'moved', regel: 'Rule', option: 'Option', herkunft: { annahme: 'assumption', fehlt: 'missing' },
+    urteil: 'Verdict', stufen: { los: 'Go', los_mit_bedingungen: 'Go with conditions', umbauen: 'Rework', warten: 'Wait', lassen: 'Drop' },
+    optionen: 'Options', spanne: 'Range', wartenAuf: (was, bis) => `Waiting for: ${was}${bis ? ` (until ${bis})` : ''}`, bedingungen: 'Conditions',
+    wertung: (p, sp, si) => `Score ${p} of 10 · Range ${sp} · Confidence ${si} of 5`, scorecard: 'Scorecard', spalten: ['Member', 'Weight', 'Start', 'End', 'Decision'],
+    bewCheck: 'Valuation check', bewDeine: (post, pre) => `Your valuation ${post} (pre-money ${pre})`, bewAngebote: (min, max, a, b) => `Offers ${min}–${max} · Discount ${a}–${b}%`, bewKeins: 'no offer with equity',
+    begruendung: 'Reasoning', einwaende: 'Strongest objections', einwandStatus: { ausgeraeumt: 'resolved', offen: 'still open', neu: 'new' }, weg: 'How to resolve it: ',
+    naechster: 'Next step', nochmal: 'Watch again', schliessen: 'Close',
+    kosten: k => ` · ${k.agenten} agent calls, ${zahl(k.tokens)} tokens${k.usd ? `, about $${zahl(k.usd.gesamt ?? 0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} at API list prices` : ''}`,
+  },
 };
-let F = FORMATE.investoren;
-const PH = { pitch: 'Pitch', eindruck: 'Erster Eindruck', fragen: 'Kreuzverhör', schlagabtausch: 'Schlagabtausch', angebote: 'Angebote', verhandlung: 'Verhandlung', urteil: 'Urteil' };
+let T = TEXTE.de, F = T.formate.investoren, PH = { ...T.phasen };
 const REIHE = Object.keys(PH);
+const zahl = (n, o) => new Intl.NumberFormat(T.zahl, o).format(n);
+const geld = n => T.geld(zahl(n)); // Deutsch „50.000 €“, Englisch „$50,000“
+const dez = n => n == null ? '–' : zahl(n, { maximumFractionDigits: 1 });
+const kond = a => a.betrag == null ? F.ja : a.anteil ? T.fuer(geld(a.betrag), a.anteil) : T.ohneAnteil(geld(a.betrag));
 const WPS = 3.2; // Lesetempo bei 1×: Wörter pro Sekunde
 const L = window.LR_RAT || {}, IDX = window.LR_INDEX || [];
 let S, steps = [], i = 0, spielt = true, tempo = 1, uhr, wortUhr, liveUhr;
 // Am Ende steht das Urteil; solange die Sitzung live läuft, ein Warte-Schritt, der den Stand der Runde zeigt
 const baueSteps = () => [{ phase: 'pitch', sprecher: 'gruender', an: null, text: S.pitch.text }, ...S.beitraege, { phase: S.live ? 'warten' : 'urteil' }];
 
-const name = s => s === 'gruender' ? S.pitch.gruender : s === 'moderator' ? 'Moderation' : (L[s]?.name || s);
+const name = s => s === 'gruender' ? S.pitch.gruender : s === 'moderator' ? T.moderation : (L[s]?.name || s);
 const initialen = s => name(s).split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
-const bild = (s, cls = '') => L[s] ? `<img class="${cls}" src="avatare/${s}.png" alt="" onerror="this.outerHTML='<span class=&quot;mini ${cls}&quot;>${initialen(s)}</span>'">` : `<span class="mini ${cls}">${s === 'gruender' ? 'G' : 'M'}</span>`;
+// Bilddatei eines Mitglieds: „avatar" im Dossier leiht die Bilder eines anderen (z. B. englischer cfo → kaufmann); die id bleibt der slug
+const datei = s => L[s]?.avatar ?? s;
+const frames = s => (L[s]?.frames?.length ? L[s].frames : L[datei(s)]?.frames) ?? [];
+const bild = (s, cls = '') => L[s] ? `<img class="${cls}" src="avatare/${datei(s)}.png" alt="" onerror="this.outerHTML='<span class=&quot;mini ${cls}&quot;>${initialen(s)}</span>'">` : `<span class="mini ${cls}">${s === 'gruender' ? T.kuerzel.gruender : T.kuerzel.moderator}</span>`;
 
 // Lippenbewegung: je Vokalgruppe (≈ Silbe) erst leicht offen, dann die Vokalform; fehlende Varianten fallen auf vorhandene zurück
 const ERSATZ = { m1: ['m1', 'm2'], m2: ['m2', 'm1'], m3: ['m3', 'm2', 'm1'], m4: ['m4', 'm2', 'm1'] };
@@ -269,7 +337,7 @@ function laden(id) {
   const sc = document.createElement('script'); sc.id = 'sitzung-js';
   sc.src = '../sessions/' + encodeURIComponent(id) + '.js?' + Date.now();
   sc.onload = () => { start(window.LR_SESSION); if (S.live) liveUhr = setInterval(() => nachladen(id), 2500); };
-  sc.onerror = () => leer(`Sitzung <code>${esc(id)}</code> nicht gefunden. <code>node scripts/sitzung.mjs ${esc(id)}</code> ausführen.`);
+  sc.onerror = () => leer(T.nichtGefunden(esc(id)));
   document.body.appendChild(sc);
   history.replaceState(null, '', '#' + id);
 }
@@ -289,11 +357,23 @@ function aktualisieren(neu) {
   if (wartet) { spielt = true; zeige(i); }
   else $('#rest').textContent = restText();
 }
-const restText = () => S.live ? `${steps.length - 1 - i} bis zum Live-Stand` : `${steps.length - 1 - i} bis zum Urteil`;
+const restText = () => S.live ? T.restLive(steps.length - 1 - i) : T.restUrteil(steps.length - 1 - i);
 function kopf() {
   $('#pitchkopf').innerHTML = `<h1>${esc(S.titel)}</h1><span class="wer">${esc(S.pitch.gruender)} · ${esc(S.datum)}</span>
-    ${S.pitch.forderung ? `<span class="forderung">Forderung ${kond(S.pitch.forderung)}</span>${S.pitch.forderung.anteil > 0 ? `<span class="forderung" title="Post-Money = Betrag ÷ Anteil">Bewertung ${euro(Math.round(S.pitch.forderung.betrag / S.pitch.forderung.anteil * 100))}</span>` : ''}` : ''}${S.vorher ? `<span class="wv">Wiedervorlage vom ${esc(IDX.find(x => x.id === S.vorher)?.datum ?? S.vorher)}</span>` : ''}${S.live ? '<span class="live">LIVE</span>' : ''}`;
-  $('#springen').textContent = S.live ? 'Zum Live-Stand' : 'Zum Urteil';
+    ${S.pitch.forderung ? `<span class="forderung">${T.forderung} ${kond(S.pitch.forderung)}</span>${S.pitch.forderung.anteil > 0 ? `<span class="forderung" title="${T.postMoney}">${T.bewertung} ${geld(Math.round(S.pitch.forderung.betrag / S.pitch.forderung.anteil * 100))}</span>` : ''}` : ''}${S.vorher ? `<span class="wv">${T.wiedervorlage(esc(IDX.find(x => x.id === S.vorher)?.datum ?? S.vorher))}</span>` : ''}${S.live ? '<span class="live">LIVE</span>' : ''}`;
+  $('#springen').textContent = S.live ? T.zumLive : T.zumUrteil;
+}
+// Feste Texte im HTML (Kopfleiste, Steuerung, Mitschrift) und <html lang> auf die Sprache der Sitzung stellen
+function texte() {
+  document.documentElement.lang = T.lang;
+  $('.marke .sim').textContent = T.sim;
+  $('#phasen').setAttribute('aria-label', T.phasenNav);
+  $('#wahl').setAttribute('aria-label', T.wahl);
+  $('#mitschrift').setAttribute('aria-label', T.mitschrift);
+  Object.assign($('#zurueck'), { textContent: T.zurueck, title: T.zurueckTitel });
+  Object.assign($('#vor'), { textContent: T.vor, title: T.vorTitel });
+  $('#spiel').title = T.spielTitel;
+  document.querySelectorAll('[data-tempo]').forEach(b => { b.textContent = zahl(+b.dataset.tempo) + '×'; });
 }
 function phasenLeiste() {
   const da = new Set(steps.map(s => s.phase));
@@ -308,18 +388,19 @@ function leer(html) {
 
 function start(sitzung) {
   S = sitzung; i = 0;
-  F = FORMATE[S.format] || FORMATE.investoren; Object.assign(PH, { angebote: F.angebote, verhandlung: F.verhandlung });
+  T = TEXTE[S.sprache === 'en' ? 'en' : 'de']; texte();
+  F = T.formate[S.format] || T.formate.investoren; PH = { ...T.phasen, angebote: F.angebote, verhandlung: F.verhandlung };
   $('#marke').textContent = S.marke ?? F.marke; document.title = S.marke ?? F.marke;
   const RV = window.LR_RUECKVERGLEICH, rvPasst = RV && S.panel.every(p => RV.mitglieder.includes(p.slug));
   $('#treffer').hidden = !rvPasst;
-  if (rvPasst) { $('#treffer').textContent = `Rückvergleich: ${RV.ergebnis_richtig}/${RV.faelle} Pitches richtig`; $('#treffer').title = `${RV.entscheidungen_richtig} von ${RV.entscheidungen} Einzelentscheidungen wie im Original (Regel „immer Nein“: ${RV.basis_entscheidungen}) · Stand ${RV.stand}`; }
+  if (rvPasst) { $('#treffer').textContent = T.rv(RV); $('#treffer').title = T.rvTitel(RV); }
   steps = baueSteps(); kopf();
   const n = S.panel.length;
   $('#runde').innerHTML = '<svg class="faeden" id="faeden"></svg>' + S.panel.map((p, k) => {
     const x = n === 1 ? 50 : 10 + k * 80 / (n - 1), hub = 1 - ((x - 50) / 40) ** 2;
     return `<div class="sitz" id="sitz-${p.slug}" style="left:${x}%;top:${Math.round(56 - 52 * hub)}px">
-      <div class="ava">${L[p.slug] ? `<img src="avatare/${p.slug}.png" alt="${esc(name(p.slug))}" onerror="this.outerHTML='<span class=&quot;init&quot;>${initialen(p.slug)}</span>'">${(L[p.slug].frames || []).map(v => `<img class="f f-${v}" src="avatare/${p.slug}-${v}.png" alt="">`).join('')}` : `<span class="init">${initialen(p.slug)}</span>`}<span class="stempel">${F.stempel}</span></div>
-      <div class="schild"><b>${esc(name(p.slug))}</b><i>${esc(L[p.slug]?.etikett || '')}</i><span class="chip" id="chip-${p.slug}">hört zu</span></div></div>`;
+      <div class="ava">${L[p.slug] ? `<img src="avatare/${datei(p.slug)}.png" alt="${esc(name(p.slug))}" onerror="this.outerHTML='<span class=&quot;init&quot;>${initialen(p.slug)}</span>'">${frames(p.slug).map(v => `<img class="f f-${v}" src="avatare/${datei(p.slug)}-${v}.png" alt="">`).join('')}` : `<span class="init">${initialen(p.slug)}</span>`}<span class="stempel">${F.stempel}</span></div>
+      <div class="schild"><b>${esc(name(p.slug))}</b><i>${esc(L[p.slug]?.etikett || '')}</i><span class="chip" id="chip-${p.slug}">${T.hoertZu}</span></div></div>`;
   }).join('') + `<div class="gruender" id="sitz-gruender"><span class="punkt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>${esc(S.pitch.gruender)}</div>`;
   $('#rede').hidden = $('#steuer').hidden = false;
   phasenLeiste();
@@ -338,19 +419,19 @@ function stand(bis) {
 function chipText(z) {
   if (z.status === 'angebot' && z.angebot) return z.angebot.betrag == null ? F.ja : `${F.ja} · ${kond(z.angebot)}`;
   if (z.status === 'raus') return F.raus;
-  if (z.status === 'interessiert') return `Interessiert · ${dez(z.wert)}`;
-  if (z.status === 'skeptisch') return `Skeptisch · ${dez(z.wert)}`;
-  return 'hört zu';
+  if (z.status === 'interessiert') return `${T.interessiert} · ${dez(z.wert)}`;
+  if (z.status === 'skeptisch') return `${T.skeptisch} · ${dez(z.wert)}`;
+  return T.hoertZu;
 }
 function was(s) {
   const an = s.an && s.an !== 'gruender' ? name(s.an) : null;
   switch (s.phase) {
-    case 'pitch': return 'pitcht';
-    case 'eindruck': return 'erster Eindruck';
-    case 'fragen': return s.sprecher === 'gruender' ? `antwortet ${an ?? ''}` : 'fragt den Gründer';
-    case 'schlagabtausch': return an ? `widerspricht ${an}` : 'widerspricht';
-    case 'angebote': return s.haltung?.status === 'raus' ? F.wasRaus : s.angebot?.mit?.length ? `bietet mit ${s.angebot.mit.map(name).join(', ')}` : F.wasJa;
-    case 'verhandlung': return s.sprecher === 'gruender' ? `verhandelt mit ${an ?? ''}` : s.haltung?.status === 'raus' ? 'zieht zurück' : 'antwortet';
+    case 'pitch': return T.pitcht;
+    case 'eindruck': return T.eindruck;
+    case 'fragen': return s.sprecher === 'gruender' ? T.antwortet(an ?? '') : T.fragt;
+    case 'schlagabtausch': return T.widerspricht(an);
+    case 'angebote': return s.haltung?.status === 'raus' ? F.wasRaus : s.angebot?.mit?.length ? T.bietetMit(s.angebot.mit.map(name).join(', ')) : F.wasJa;
+    case 'verhandlung': return s.sprecher === 'gruender' ? F.verhandelt(an ?? '') : s.haltung?.status === 'raus' ? T.zieht : T.antwortetNur;
   }
   return '';
 }
@@ -359,11 +440,11 @@ function was(s) {
 function psZeile(s) {
   if (!s.pruefsteine && !s.regel) return '';
   const namen = L[s.sprecher]?.pruefsteine ?? [];
-  const teile = s.pruefsteine ? ['p1', 'p2', 'p3', 'p4'].map((k, n) => { const p = s.pruefsteine[k]; if (!p) return ''; return `<span class="${p.wert <= 3 ? 'tief' : p.wert >= 7 ? 'hoch' : ''}" title="${esc(p.grund || '')}${p.herkunft && p.herkunft !== 'pitch' ? ' (' + esc(p.herkunft) + ')' : ''}">${esc(namen[n] || k.toUpperCase())} ${p.wert}</span>`; }).join('') + `<b>Schnitt ${dez(s.schnitt)}</b>` : '';
-  const ko = s.ko ? `<span class="tief">K.O.: ${esc(s.ko)}</span>` : '';
-  const bew = s.bewegt && s.bewegt !== 'nein' ? `<i>bewegt: ${esc(s.bewegt)}</i>` : '';
-  const reg = s.regel ? `<i>Regel: ${esc(s.regel)}</i>` : '';
-  const opt = s.optionen ? Object.entries(s.optionen).map(([k, v]) => `<span class="opt ${v <= 3 ? 'tief' : v >= 7 ? 'hoch' : ''}" title="${esc((S.optionen ?? []).find(o => o.id === k)?.text ?? '')}">Option ${esc(k)} ${v}${s.empfehlung === k ? ' ★' : ''}</span>`).join('') : '';
+  const teile = s.pruefsteine ? ['p1', 'p2', 'p3', 'p4'].map((k, n) => { const p = s.pruefsteine[k]; if (!p) return ''; return `<span class="${p.wert <= 3 ? 'tief' : p.wert >= 7 ? 'hoch' : ''}" title="${esc(p.grund || '')}${p.herkunft && p.herkunft !== 'pitch' ? ' (' + esc(T.herkunft[p.herkunft] ?? p.herkunft) + ')' : ''}">${esc(namen[n] || k.toUpperCase())} ${p.wert}</span>`; }).join('') + `<b>${T.schnitt} ${dez(s.schnitt)}</b>` : '';
+  const ko = s.ko ? `<span class="tief">${T.ko}: ${esc(s.ko)}</span>` : '';
+  const bew = s.bewegt && !['nein', 'no'].includes(s.bewegt) ? `<i>${T.bewegt}: ${esc(s.bewegt)}</i>` : '';
+  const reg = s.regel ? `<i>${T.regel}: ${esc(s.regel)}</i>` : '';
+  const opt = s.optionen ? Object.entries(s.optionen).map(([k, v]) => `<span class="opt ${v <= 3 ? 'tief' : v >= 7 ? 'hoch' : ''}" title="${esc((S.optionen ?? []).find(o => o.id === k)?.text ?? '')}">${T.option} ${esc(k)} ${v}${s.empfehlung === k ? ' ★' : ''}</span>`).join('') : '';
   return `<div class="ps">${teile}${ko}${opt}${bew}${reg}</div>`;
 }
 
@@ -384,15 +465,15 @@ function zeige(k) {
   if (s.phase === 'warten') {
     malen(i - 1, null);
     $('#rede').innerHTML = `<div class="kopf"><span class="live">LIVE</span><span class="was">${esc(PH[S.live_phase] ?? '')}</span></div>
-      <div class="text warte">${esc(S.live_status || 'Die Runde berät')} <span class="punkte"><span>.</span><span>.</span><span>.</span></span></div>`;
-    $('#rest').textContent = 'wartet auf den nächsten Beitrag';
+      <div class="text warte">${esc(S.live_status || T.beraet)} <span class="punkte"><span>.</span><span>.</span><span>.</span></span></div>`;
+    $('#rest').textContent = T.restWarten;
     return;
   }
   malen(i, s);
   const woerter = s.text.split(/\s+/);
-  $('#rede').innerHTML = `<div class="kopf">${bild(s.sprecher)}<b>${esc(name(s.sprecher))}</b>${s.annahme ? '<span class="tag">Annahme</span>' : ''}<span class="was">${esc(was(s))}</span></div>
+  $('#rede').innerHTML = `<div class="kopf">${bild(s.sprecher)}<b>${esc(name(s.sprecher))}</b>${s.annahme ? `<span class="tag">${T.annahme}</span>` : ''}<span class="was">${esc(was(s))}</span></div>
     <div class="text">${woerter.map(w => `<span>${esc(w)} </span>`).join('')}</div>
-    ${s.angebot && s.haltung?.status !== 'raus' ? `<div class="angebot"><span class="summe">${kond(s.angebot)}${s.bewertung ? `<br><small style="font-size:12px;color:var(--fg-2)">Bewertung ${euro(s.bewertung.post)}${s.bewertung.abschlag != null ? ` · Abschlag ${s.bewertung.abschlag} %` : ''}</small>` : ''}</span>${s.angebot.bedingungen?.length ? `<ul>${s.angebot.bedingungen.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}</div>` : ''}
+    ${s.angebot && s.haltung?.status !== 'raus' ? `<div class="angebot"><span class="summe">${kond(s.angebot)}${s.bewertung ? `<br><small style="font-size:12px;color:var(--fg-2)">${T.bewertung} ${geld(s.bewertung.post)}${s.bewertung.abschlag != null ? ` · ${T.abschlag} ${T.prozent(s.bewertung.abschlag)}` : ''}</small>` : ''}</span>${s.angebot.bedingungen?.length ? `<ul>${s.angebot.bedingungen.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}</div>` : ''}
     ${s.kernpunkt ? `<div class="kern">→ ${esc(s.kernpunkt)}</div>` : ''}${psZeile(s)}`;
   const spans = [...document.querySelectorAll('#rede .text span')];
   const ava = $('#sitz-' + s.sprecher + ' .ava');
@@ -425,35 +506,35 @@ function malen(k, s) {
   let html = '', ph = '';
   steps.slice(0, k + 1).forEach((t, n) => {
     if (t.phase !== ph) { ph = t.phase; html += `<h2>${PH[ph]}</h2>`; }
-    const rechts = t.an && t.an !== 'gruender' ? 'vs ' + name(t.an).split(' ').pop() : t.phase === 'angebote' ? (t.haltung?.status === 'raus' ? F.raus : F.ja) : '';
+    const rechts = t.an && t.an !== 'gruender' ? 'vs ' + T.kurz(name(t.an)) : t.phase === 'angebote' ? (t.haltung?.status === 'raus' ? F.raus : F.ja) : '';
     html += `<button class="notiz ${n === k && s ? 'jetzt' : ''}" data-n="${n}"><span class="z1">${bild(t.sprecher)}${esc(name(t.sprecher))}<i>${esc(rechts)}</i></span><p>${esc(t.kernpunkt || t.text)}</p></button>`;
   });
   const m = $('#mitschrift'); m.innerHTML = html; m.scrollTop = m.scrollHeight;
   m.onclick = e => { const n = e.target.closest('.notiz')?.dataset.n; if (n != null) zeige(+n); };
-  $('#spiel').textContent = spielt ? 'Pause' : 'Abspielen';
+  $('#spiel').textContent = spielt ? T.pause : T.abspielen;
   document.querySelectorAll('[data-tempo]').forEach(b => b.classList.toggle('an', +b.dataset.tempo === tempo));
 }
 
 function urteil() {
   const u = S.urteil, d = u.deal;
-  $('#urteil').innerHTML = `<div class="karte" role="dialog" aria-label="Urteil">
-    <span class="ergebnis ${u.ergebnis}">${F.ergebnis[u.ergebnis]}</span>${u.stufe ? `<span class="stufe ${u.stufe}">${{ los: 'Los', los_mit_bedingungen: 'Los mit Bedingungen', umbauen: 'Umbauen', warten: 'Warten', lassen: 'Lassen' }[u.stufe]}</span>` : ''}
-    ${u.wertung?.optionen ? `<h3>Optionen</h3><table><tr><th>Option</th><th>Schnitt</th><th>Spanne</th></tr>${Object.entries(u.wertung.optionen).map(([k, v]) => `<tr><td>${k === u.wertung.beste ? '<b>' : ''}${esc(k)}) ${esc((S.optionen ?? []).find(o => o.id === k)?.text ?? '')}${k === u.wertung.beste ? '</b>' : ''}</td><td>${dez(v.schnitt)}</td><td>${dez(v.spanne)}</td></tr>`).join('')}</table>${u.ausloeser ? `<p class="wertung">Warten auf: ${esc(u.ausloeser)}${u.datum ? ` (bis ${esc(u.datum)})` : ''}</p>` : ''}` : ''}
-    ${d ? `<div class="dealzeile"><span class="koepfe">${d.mitglieder.map(l => `<img src="avatare/${l}.png" alt="${esc(name(l))}">`).join('')}</span>
+  $('#urteil').innerHTML = `<div class="karte" role="dialog" aria-label="${T.urteil}">
+    <span class="ergebnis ${u.ergebnis}">${F.ergebnis[u.ergebnis]}</span>${u.stufe ? `<span class="stufe ${u.stufe}">${T.stufen[u.stufe]}</span>` : ''}
+    ${u.wertung?.optionen ? `<h3>${T.optionen}</h3><table><tr><th>${T.option}</th><th>${T.schnitt}</th><th>${T.spanne}</th></tr>${Object.entries(u.wertung.optionen).map(([k, v]) => `<tr><td>${k === u.wertung.beste ? '<b>' : ''}${esc(k)}) ${esc((S.optionen ?? []).find(o => o.id === k)?.text ?? '')}${k === u.wertung.beste ? '</b>' : ''}</td><td>${dez(v.schnitt)}</td><td>${dez(v.spanne)}</td></tr>`).join('')}</table>${u.ausloeser ? `<p class="wertung">${T.wartenAuf(esc(u.ausloeser), u.datum ? esc(u.datum) : '')}</p>` : ''}` : ''}
+    ${d ? `<div class="dealzeile"><span class="koepfe">${d.mitglieder.map(l => `<img src="avatare/${datei(l)}.png" alt="${esc(name(l))}">`).join('')}</span>
       <span>${d.mitglieder.map(name).map(esc).join(' &amp; ')}</span><span class="summe">${kond(d)}</span></div>
-      ${d.bedingungen?.length ? `<h3>Bedingungen</h3><ul>${d.bedingungen.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}` : ''}
-    ${u.wertung ? `<p class="wertung">Punktwert ${dez(u.wertung.punktwert)} von 10 · Spanne ${dez(u.wertung.spanne)} · Sicherheit ${dez(u.wertung.sicherheit)} von 5</p>
-      <h3>Scorecard</h3><table><tr><th>Mitglied</th><th>Gewicht</th><th>Start</th><th>Ende</th><th>Entscheidung</th></tr>${Object.entries(u.wertung.je).map(([k, v]) => `<tr><td>${esc(name(k))}</td><td>${v.gewicht}</td><td>${dez(v.start)}</td><td>${dez(v.ende)}</td><td>${v.entscheidung === 'raus' ? F.raus : v.entscheidung === 'angebot' ? F.ja : '–'}</td></tr>`).join('')}</table>` : ''}
-    ${u.bewertung ? `<h3>Bewertungs-Check</h3><p class="wertung">Deine Bewertung ${euro(u.bewertung.forderung.post)} (vor dem Investment ${euro(u.bewertung.forderung.pre)}) · ${u.bewertung.angebote.length ? `Angebote ${euro(u.bewertung.min)}–${euro(u.bewertung.max)} · Abschlag ${Math.min(...u.bewertung.angebote.map(x => x.abschlag))}–${Math.max(...u.bewertung.angebote.map(x => x.abschlag))} %` : 'kein Angebot mit Anteil'}</p>` : ''}
-    <h3>Begründung</h3><p>${esc(u.begruendung)}</p>
-    ${u.einwaende?.length ? `<h3>Die stärksten Einwände</h3>${u.einwaende.map(e => `<div class="einwand">${bild(e.von)}<div><p><b>${esc(name(e.von))}:</b> ${esc(e.text)}${e.status ? `<span class="status ${e.status}">${{ ausgeraeumt: 'ausgeräumt', offen: 'noch offen', neu: 'neu' }[e.status] ?? esc(e.status)}</span>` : ''}</p>${e.ausraeumen ? `<p class="weg">${esc(e.ausraeumen)}</p>` : ''}</div></div>`).join('')}` : ''}
-    ${u.naechster_schritt ? `<h3>Nächster Schritt</h3><div class="schritt">${esc(u.naechster_schritt)}</div>` : ''}
-    <div class="knoepfe"><button class="primaer" id="nochmal">Nochmal ansehen</button><button id="zu">Schließen</button></div>
-    <p class="hinweis">${F.hinweis}${S.kosten ? ` · ${S.kosten.agenten} Agentenaufrufe, ${new Intl.NumberFormat('de-DE').format(S.kosten.tokens)} Tokens${S.kosten.usd ? `, rund ${dez(S.kosten.usd.gesamt)} $ zum API-Listenpreis` : ''}` : ''}</p></div>`;
+      ${d.bedingungen?.length ? `<h3>${T.bedingungen}</h3><ul>${d.bedingungen.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}` : ''}
+    ${u.wertung ? `<p class="wertung">${T.wertung(dez(u.wertung.punktwert), dez(u.wertung.spanne), dez(u.wertung.sicherheit))}</p>
+      <h3>${T.scorecard}</h3><table><tr>${T.spalten.map(x => `<th>${x}</th>`).join('')}</tr>${Object.entries(u.wertung.je).map(([k, v]) => `<tr><td>${esc(name(k))}</td><td>${v.gewicht}</td><td>${dez(v.start)}</td><td>${dez(v.ende)}</td><td>${v.entscheidung === 'raus' ? F.raus : v.entscheidung === 'angebot' ? F.ja : '–'}</td></tr>`).join('')}</table>` : ''}
+    ${u.bewertung ? `<h3>${T.bewCheck}</h3><p class="wertung">${T.bewDeine(geld(u.bewertung.forderung.post), geld(u.bewertung.forderung.pre))} · ${u.bewertung.angebote.length ? T.bewAngebote(geld(u.bewertung.min), geld(u.bewertung.max), Math.min(...u.bewertung.angebote.map(x => x.abschlag)), Math.max(...u.bewertung.angebote.map(x => x.abschlag))) : T.bewKeins}</p>` : ''}
+    <h3>${T.begruendung}</h3><p>${esc(u.begruendung)}</p>
+    ${u.einwaende?.length ? `<h3>${T.einwaende}</h3>${u.einwaende.map(e => `<div class="einwand">${bild(e.von)}<div><p><b>${esc(name(e.von))}:</b> ${esc(e.text)}${e.status ? `<span class="status ${e.status}">${T.einwandStatus[e.status] ?? esc(e.status)}</span>` : ''}</p>${e.ausraeumen ? `<p class="weg" data-vor="${esc(T.weg)}">${esc(e.ausraeumen)}</p>` : ''}</div></div>`).join('')}` : ''}
+    ${u.naechster_schritt ? `<h3>${T.naechster}</h3><div class="schritt">${esc(u.naechster_schritt)}</div>` : ''}
+    <div class="knoepfe"><button class="primaer" id="nochmal">${T.nochmal}</button><button id="zu">${T.schliessen}</button></div>
+    <p class="hinweis">${F.hinweis}${S.kosten ? T.kosten(S.kosten) : ''}</p></div>`;
   $('#urteil').hidden = false;
   $('#nochmal').onclick = () => { spielt = true; zeige(0); };
   $('#zu').onclick = () => { $('#urteil').hidden = true; };
-  $('#rest').textContent = 'Urteil';
+  $('#rest').textContent = T.restEnde;
 }
 
 $('#vor').onclick = () => zeige(i + 1);
@@ -476,7 +557,7 @@ $('#wahl').onchange = e => laden(e.target.value);
 addEventListener('hashchange', () => { const id = decodeURIComponent(location.hash.slice(1)); if (id && id !== S?.id) { $('#wahl').value = id; laden(id); } });
 const wunsch = decodeURIComponent(location.hash.slice(1)) || IDX[0]?.id;
 if (wunsch) { $('#wahl').value = wunsch; laden(wunsch); }
-else leer('Noch keine Sitzung. Starte den Rat in Claude Code mit dem Skill.');
+else leer(T.keineSitzung);
 </script>
 </body>
 </html>

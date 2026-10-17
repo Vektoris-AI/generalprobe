@@ -1,0 +1,870 @@
+{
+ "version": 1,
+ "format": "beirat",
+ "oeffentlich": true,
+ "sprache": "en",
+ "id": "2026-10-17-example-agency",
+ "titel": "Agency: rehire or AI agents?",
+ "datum": "2026-10-17",
+ "modus": "auto",
+ "unterlagen": "unterlagen/example-agency.md",
+ "pitch": {
+  "gruender": "Dana, agency owner (fictional)",
+  "kurz": "A 22-person agency weighs AI agents against rehiring its ops coordinator.",
+  "text": "I run Northfield Creative, a 22-person marketing agency in Denver. Our ops coordinator left on September 30. Most of her month went into client reports for 31 retainer clients, onboarding, invoice reminders and keeping Asana tidy. Rehiring costs about $73,700 a year fully loaded and took 9 weeks last time. A consultant quoted $12,500 to set up Claude agents that draft the reports, run onboarding and chase invoices, with an account manager approving everything, plus $1,430 a month to run it. I lean towards the agents and skipping the hire. What I'm not sure about: a third of her hours were people and office work no agent will do, and two reports already went out late this month. Do we replace the role with agents, rehire, or test first?",
+  "annahmen": [
+   "Fictional example: the agency, the people and all numbers are made up for a demo.",
+   "The moderator answered the cross-examination for Dana in auto mode, from the documents."
+  ]
+ },
+ "optionen": [
+  {
+   "id": "A",
+   "text": "Replace the role with the AI agent setup"
+  },
+  {
+   "id": "B",
+   "text": "Rehire an ops coordinator"
+  },
+  {
+   "id": "C",
+   "text": "Six-week pilot on the monthly reports, then decide on the hire"
+  },
+  {
+   "id": "D",
+   "text": "Keep things as they are",
+   "nicht": true
+  }
+ ],
+ "panel": [
+  {
+   "slug": "cfo",
+   "gewicht": 3,
+   "warum": "Does $29,660 in year one beat a $73,700 hire once the hidden hours are counted?"
+  },
+  {
+   "slug": "operator",
+   "gewicht": 3,
+   "warum": "Who picks up the 51 hours no agent covers, and who keeps the agents running?"
+  },
+  {
+   "slug": "customer",
+   "gewicht": 2,
+   "warum": "Would a client notice an agent-drafted report, and would they care?"
+  },
+  {
+   "slug": "skeptic",
+   "gewicht": 2,
+   "warum": "Client contracts, client data, and what happens when a report is wrong."
+  },
+  {
+   "slug": "sales-lead",
+   "gewicht": 1,
+   "warum": "Does this change how the agency keeps and wins clients?"
+  }
+ ],
+ "beitraege": [
+  {
+   "phase": "eindruck",
+   "sprecher": "cfo",
+   "an": null,
+   "text": "The payback hangs on 101 hours a month that nobody has measured as saved. If they are real, the net is about $2,320 a month after $1,760 to run it, Priya's time included, and the $12,500 setup is back in roughly five and a half months. At half the hours it is $280 a month, about 45 months. Year one costs $33,620 against $73,700 for the hire, but the 51 hours of office and people work no agent covers are worth about $2,060 a month at her loaded rate, and nobody owns them. There is no stop date and no spending cap, and the care plan locks in $7,800 for 12 months, so I would test the reports first.",
+   "haltung": {
+    "status": "skeptisch",
+    "wert": 5
+   },
+   "kernpunkt": "Payback depends on unmeasured hours saved; no stop date or spending cap.",
+   "pruefsteine": {
+    "p1": {
+     "wert": 5,
+     "herkunft": "annahme",
+     "grund": "Costs documented, saved hours untested; half the hours means payback near 45 months."
+    },
+    "p2": {
+     "wert": 6,
+     "herkunft": "annahme",
+     "grund": "Cash $410,000 absorbs delay; Priya's 6 hours estimated, 51 uncovered hours unowned and unpriced."
+    },
+    "p3": {
+     "wert": 5,
+     "herkunft": "annahme",
+     "grund": "$33,620 year one against $73,700 hire, but 51 hours uncovered and savings unproven."
+    },
+    "p4": {
+     "wert": 4,
+     "herkunft": "fehlt",
+     "grund": "Fixed $12,500 setup price only; no stop date, no pass-fail test, 12-month care lock-in."
+    }
+   },
+   "ko": null,
+   "schnitt": 5,
+   "sicherheit": 3,
+   "meinung_aendert": "A pilot that measures reports at 17 hours a month or less (now 52), the roughly 70% saving needed for a 12-month payback; P1 would move from 5 to 7.",
+   "optionen": {
+    "A": 4,
+    "B": 3,
+    "C": 6,
+    "D": 3
+   },
+   "empfehlung": "C"
+  },
+  {
+   "phase": "eindruck",
+   "sprecher": "operator",
+   "an": null,
+   "text": "A third of her month, 51 of 152 tracked hours, is vendor, office and people work that no agent will touch, and the plan has nobody for it while two reports are already 3 and 5 days late. The reports are 52 hours and run the same way every time, so that's the right place to start, but Priya's 6 hours a month for approvals is a guess, and nine of the 31 contracts limit who may process client data and nobody has asked those clients. I wouldn't skip the hire on a quote alone: test the reports and open the recruiting in parallel, because six weeks of testing plus nine weeks of hiring leaves the seat empty for fifteen weeks. Even with the agents, year one costs $33,620 once you count Priya's time, and the 51 hours are still uncovered.",
+   "haltung": {
+    "status": "skeptisch",
+    "wert": 4.6
+   },
+   "kernpunkt": "51 monthly hours have no owner, and reports are already late.",
+   "pruefsteine": {
+    "p1": {
+     "wert": 4,
+     "herkunft": "annahme",
+     "grund": "Priya owns agents on an assumed 6 hours; 51 monthly hours have no owner."
+    },
+    "p2": {
+     "wert": 6,
+     "herkunft": "pitch",
+     "grund": "Reports and onboarding follow set steps with approval; SOPs and complaint path still missing."
+    },
+    "p3": {
+     "wert": 5,
+     "herkunft": "annahme",
+     "grund": "$33,620 year one versus $73,700, but savings unproven and 51 hours stay uncovered."
+    },
+    "p4": {
+     "wert": 4,
+     "herkunft": "fehlt",
+     "grund": "Gap named, but no owner, no cap, nothing dropped; two reports already late."
+    }
+   },
+   "ko": "The daily business suffers and nobody takes over the work. As pitched (agents, no hire), two October reports already went out 3 and 5 days late, and the 51 hours a month of vendor, office and people work are marked open.",
+   "schnitt": 4.6,
+   "sicherheit": 3,
+   "meinung_aendert": "A named owner for the 51 monthly office and people hours, with the tasks they drop written down, would lift the K.O. and move P4 from 4 to 6.",
+   "optionen": {
+    "A": 3,
+    "B": 5,
+    "C": 6,
+    "D": 1
+   },
+   "empfehlung": "C"
+  },
+  {
+   "phase": "eindruck",
+   "sprecher": "customer",
+   "an": null,
+   "text": "My biggest problem is the lock-in: $12,500 up front and a 12-month minimum on the care plan, with no trial of agents that haven't drafted one real report yet. On paper they cover 101 of her 152 hours, which is real money against $73,700, but nothing pays back before week six and the other 51 hours of people and office work still have no owner. Two reports are already late, so waiting six weeks hurts too. I'd buy a small test on the reports, not the whole package.",
+   "haltung": {
+    "status": "skeptisch",
+    "wert": 4.4
+   },
+   "kernpunkt": "No trial, 12-month lock-in, and a third of the job unowned.",
+   "pruefsteine": {
+    "p1": {
+     "wert": 5,
+     "herkunft": "pitch",
+     "grund": "Clear in one sentence, but covers only 101 of 152 hours and is unproven."
+    },
+    "p2": {
+     "wert": 4,
+     "herkunft": "pitch",
+     "grund": "Six-week setup before any benefit; Priya's 6 monthly hours are an assumption."
+    },
+    "p3": {
+     "wert": 5,
+     "herkunft": "annahme",
+     "grund": "About $33,600 year one for roughly $49,000 of hours, but unproven and 51 hours uncovered."
+    },
+    "p4": {
+     "wert": 3,
+     "herkunft": "pitch",
+     "grund": "No trial in the quote; care plan has a 12-month minimum."
+    }
+   },
+   "ko": null,
+   "schnitt": 4.4,
+   "sicherheit": 3,
+   "meinung_aendert": "A written offer for a priced reports-only pilot with no care-plan lock-in beyond six weeks (P4 from 3 to 7).",
+   "optionen": {
+    "A": 3,
+    "B": 5,
+    "C": 6,
+    "D": 2
+   },
+   "empfehlung": "C"
+  },
+  {
+   "phase": "eindruck",
+   "sprecher": "skeptic",
+   "an": null,
+   "text": "I can't support the agents yet: 9 of your 31 retainer contracts allow client data only with approved subcontractors, and no one has asked those clients whether Claude counts. At the average retainer that is about $778,000 a year against $290,000 in profit. A lawsuit is unlikely, but clients are already watching, since one asked why a report was late. Add six people on personal AI accounts with no policy and 51 hours of people and office work nobody owns, and I'd run a small test only on clients whose contracts allow it, or clear the nine first.",
+   "haltung": {
+    "status": "skeptisch",
+    "wert": 3
+   },
+   "kernpunkt": "Nine client contracts limit data processing; nobody has asked them.",
+   "pruefsteine": {
+    "p1": {
+     "wert": 2,
+     "herkunft": "pitch",
+     "grund": "9 of 31 MSAs limit data to approved subcontractors; no client asked."
+    },
+    "p2": {
+     "wert": 4,
+     "herkunft": "pitch",
+     "grund": "Nine clients' retainers at risk, no exit defined, 12-month care plan lock-in."
+    },
+    "p3": {
+     "wert": 5,
+     "herkunft": "annahme",
+     "grund": "$33,620 year one vs $73,700, but 51 hours uncovered, savings unproven."
+    },
+    "p4": {
+     "wert": 2,
+     "herkunft": "pitch",
+     "grund": "No client approvals or AI policy, no data agreement mentioned; only report sign-off planned."
+    }
+   },
+   "ko": "A legal issue is unresolved: 9 of 31 retainer MSAs allow client data to be processed only by approved subcontractors, and no client has been asked yet.",
+   "schnitt": 3,
+   "sicherheit": 3,
+   "meinung_aendert": "Written approval from all 9 clients, or an attorney's written opinion that the clauses don't cover Claude, moves P1 from 2 to 7 and lifts the K.O.",
+   "optionen": {
+    "A": 2,
+    "B": 5,
+    "C": 6,
+    "D": 3
+   },
+   "empfehlung": "C"
+  },
+  {
+   "phase": "eindruck",
+   "sprecher": "sales-lead",
+   "an": null,
+   "text": "Dana, nine of your 31 retainer contracts say client data goes only to approved subcontractors, and nobody has asked those clients a thing. At your average $7,200 a month, that's roughly $780,000 a year in retainers riding on a question you haven't put to them, against a $73,700 role you want to save. The hours are real, 101 of her 152 tracked hours are work agents could draft, but the other 51 still need an owner and not one report draft has been tested. I'd run the reports first, with clients who've said yes.",
+   "haltung": {
+    "status": "skeptisch",
+    "wert": 4.6
+   },
+   "kernpunkt": "Nine contracts limit who may process client data; nobody asked yet.",
+   "pruefsteine": {
+    "p1": {
+     "wert": 6,
+     "herkunft": "pitch",
+     "grund": "Time tracker shows the need in-house, but no client has weighed in on AI-drafted work."
+    },
+    "p2": {
+     "wert": 4,
+     "herkunft": "fehlt",
+     "grund": "No agent draft tested, no client asked, 51 uncovered hours; approval path only named."
+    },
+    "p3": {
+     "wert": 5,
+     "herkunft": "annahme",
+     "grund": "Year one about $33,600 with Priya's time versus $73,700 hire; savings are inferred, unproven."
+    },
+    "p4": {
+     "wert": 2,
+     "herkunft": "pitch",
+     "grund": "No client calls booked; pitch says no client has been asked yet."
+    }
+   },
+   "ko": null,
+   "schnitt": 4.6,
+   "sicherheit": 3,
+   "meinung_aendert": "Written go-ahead from all 9 clause clients and at least 80% of pilot report drafts approved with only minor edits.",
+   "optionen": {
+    "A": 3,
+    "B": 5,
+    "C": 6,
+    "D": 2
+   },
+   "empfehlung": "C"
+  },
+  {
+   "phase": "fragen",
+   "sprecher": "skeptic",
+   "an": "gruender",
+   "text": "What do the nine subcontractor clauses actually say, and will those clients approve Claude in writing before any of their data goes in? Is there a signed data processing agreement for your Claude account?"
+  },
+  {
+   "phase": "fragen",
+   "sprecher": "gruender",
+   "an": "skeptic",
+   "text": "We know the clause from the MSAs: client data may only be processed by approved subcontractors. Whether an AI vendor counts, we don't know yet, and nobody has asked the nine. There is no Claude Team account and no data agreement yet, so none of their data is in there today. What the six people put into their personal AI accounts, we don't know.",
+   "annahme": true
+  },
+  {
+   "phase": "fragen",
+   "sprecher": "operator",
+   "an": "gruender",
+   "text": "Who takes the 51 hours a month of vendor, office and people work starting now, by name, and what do they drop to make room?"
+  },
+  {
+   "phase": "fragen",
+   "sprecher": "gruender",
+   "an": "operator",
+   "text": "Nobody, honestly. Since September 30 the account managers cover reports and onboarding and I do the invoicing. Vendors, office and people work just slip. I don't have a name for it yet.",
+   "annahme": true
+  },
+  {
+   "phase": "fragen",
+   "sprecher": "cfo",
+   "an": "gruender",
+   "text": "What is your hard spending cap and stop date, and which measured number, hours per report against today's 52, decides go or stop?"
+  },
+  {
+   "phase": "fragen",
+   "sprecher": "gruender",
+   "an": "cfo",
+   "text": "We haven't set a cap or a stop date. The 52 hours a month for reports are measured in her time tracker, so that is the number we could test against. What the agents would bring it down to, we don't know yet.",
+   "annahme": true
+  },
+  {
+   "phase": "fragen",
+   "sprecher": "customer",
+   "an": "gruender",
+   "text": "Will the consultant run a reports-only pilot at a fixed price, with seats and care plan cancelable after six weeks if it fails?"
+  },
+  {
+   "phase": "fragen",
+   "sprecher": "gruender",
+   "an": "customer",
+   "text": "The quote only covers the full setup at $12,500 and a care plan with a 12-month minimum. I haven't asked for a reports-only pilot, so I don't know the price or whether they would do it.",
+   "annahme": true
+  },
+  {
+   "phase": "schlagabtausch",
+   "sprecher": "cfo",
+   "an": "operator",
+   "text": "A full-time search opened now commits $73,700 a year, plus $11,600 if you use a recruiter, before anyone knows whether 101 hours go away. If they do, what is left is a 51-hour job worth about $2,060 a month, not a $6,140 seat. The empty seat is also not a cash drain: it saves about $1,420 a week in loaded payroll, roughly $21,000 over fifteen weeks, so the real price of waiting is the late reports and the 51 orphaned hours. Bridge those with named cover capped at $2,060 a month and open the search at the pilot readout.",
+   "haltung": {
+    "status": "skeptisch",
+    "wert": 4.8
+   },
+   "kernpunkt": "Cover the 51 hours cheaply, search after the pilot, not before.",
+   "zugestaendnis": "The late reports are a real cost, since one lost average retainer is $86,400 a year, more than the $73,700 hire, and one client has already asked why a report was late.",
+   "bewegt": "P4 from 4 to 3 because Dana confirmed there is no spending cap and no stop date, which is the none anchor.",
+   "bedingungen": [
+    "Reports-only pilot quote in writing by Oct 31, cancelable after six weeks, total money at risk capped at $6,500",
+    "Pilot starts Nov 3 and ends in a go or stop decision on Dec 15; stop means no care plan is signed",
+    "Go only if tracked report hours fall from 52 to 16 or less a month, about 70% saved, the level that pays the setup back in about 12 months",
+    "Signed data agreement for the Claude account and the pilot clients' contracts read before any client data goes in; the nine clause clients stay out until asked in writing",
+    "Named owner for the 51 hours by Nov 3 with cover capped at $2,060 a month, and no recruiter contract or offer before Dec 15"
+   ],
+   "pruefsteine": {
+    "p1": {
+     "wert": 5,
+     "herkunft": "annahme",
+     "grund": "Costs documented, saved hours untested; half the hours means payback near 45 months."
+    },
+    "p2": {
+     "wert": 6,
+     "herkunft": "annahme",
+     "grund": "Cash $410,000 absorbs delay; Priya's 6 hours estimated, 51 uncovered hours unowned and unpriced."
+    },
+    "p3": {
+     "wert": 5,
+     "herkunft": "annahme",
+     "grund": "$33,620 year one against $73,700 hire, but 51 hours uncovered and savings unproven."
+    },
+    "p4": {
+     "wert": 3,
+     "herkunft": "pitch",
+     "grund": "Dana confirmed no cap and no stop date; only the consultant's price is written."
+    }
+   },
+   "ko": null,
+   "schnitt": 4.8,
+   "optionen": {
+    "A": 3,
+    "B": 3,
+    "C": 6,
+    "D": 3
+   }
+  },
+  {
+   "phase": "schlagabtausch",
+   "sprecher": "operator",
+   "an": "cfo",
+   "text": "A cap in dollars isn't a name: 51 hours a month is about 12 hours a week coming off somebody's calendar, and nobody has said whose. The hours table gives no process at all for the vendor, office and people work, and what isn't written down, nobody can take over, so any cover starts from zero while reports are already 3 and 5 days late. I'd want a one-page task list and one named owner with a written drop list before the pilot clock starts.",
+   "haltung": {
+    "status": "skeptisch",
+    "wert": 4.6
+   },
+   "kernpunkt": "The 51 hours need a named owner, not a dollar cap.",
+   "zugestaendnis": "An empty seat saves about $1,420 a week in loaded payroll, so I'd hold the search until the pilot readout instead of opening it now.",
+   "bewegt": "nein",
+   "bedingungen": [
+    "By Oct 24: one named owner for the 51 hours of vendor, office and people work, with a written list of what that person drops",
+    "Before signing: reports-only pilot priced in writing, with seats and care plan cancelable at week six",
+    "Pilot runs only on the 22 clients without the clause until the nine have answered in writing",
+    "Go/stop at week six: hours per report, approval included, over at least 10 reports, against today's 1.7 (52 h ÷ 31)",
+    "If the 51 hours are still uncovered at the readout, the search opens that day"
+   ],
+   "pruefsteine": {
+    "p1": {
+     "wert": 4,
+     "herkunft": "annahme",
+     "grund": "Priya owns agents on an assumed 6 hours; 51 monthly hours have no owner."
+    },
+    "p2": {
+     "wert": 6,
+     "herkunft": "pitch",
+     "grund": "Reports and onboarding follow set steps with approval; SOPs and complaint path still missing."
+    },
+    "p3": {
+     "wert": 5,
+     "herkunft": "annahme",
+     "grund": "$33,620 year one versus $73,700, but savings unproven and 51 hours stay uncovered."
+    },
+    "p4": {
+     "wert": 4,
+     "herkunft": "fehlt",
+     "grund": "Gap named, but no owner, no cap, nothing dropped; two reports already late."
+    }
+   },
+   "ko": "The daily business suffers and nobody takes over the work. As pitched (agents, no hire), two October reports already went out 3 and 5 days late, and the 51 hours a month of vendor, office and people work are marked open.",
+   "schnitt": 4.6,
+   "optionen": {
+    "A": 3,
+    "B": 5,
+    "C": 6,
+    "D": 1
+   }
+  },
+  {
+   "phase": "schlagabtausch",
+   "sprecher": "customer",
+   "an": "cfo",
+   "text": "That empty seat saves $21,000, sure, but cash isn't what's at risk, the clients are. One retainer averages $7,200 a month, so a single client walking over late reports is about $86,400 in revenue, roughly $32,800 of gross margin at 38 percent, which is more than the fifteen weeks of savings. I can't show that late reports cost anyone yet, but one client already asked why, and one of last year's four exits said they felt like a number, so cover for the 51 hours has to start this week, not at the readout.",
+   "haltung": {
+    "status": "skeptisch",
+    "wert": 4.4
+   },
+   "kernpunkt": "Waiting risks clients, not cash: cover the 51 hours now.",
+   "zugestaendnis": "A full rehire now commits $73,700 a year before anyone knows whether 101 hours go away, and the 51 hours left over are worth only about $2,060 a month.",
+   "bewegt": "nein",
+   "bedingungen": [
+    "By October 24: a written, fixed-price quote for a reports-only pilot, with seats and care plan cancelable at week six, in hand before any payment.",
+    "By October 24: one named person with a written drop list covers the 51 hours a month of vendor, office and people work.",
+    "Go or stop at week six: time per report including approval is at or below half of today's 1.7 hours (52 h ÷ 31 reports), measured in the time tracker."
+   ],
+   "pruefsteine": {
+    "p1": {
+     "wert": 5,
+     "herkunft": "pitch",
+     "grund": "Clear in one sentence, but covers only 101 of 152 hours and is unproven."
+    },
+    "p2": {
+     "wert": 4,
+     "herkunft": "pitch",
+     "grund": "Six-week setup before any benefit; Priya's 6 monthly hours are an assumption."
+    },
+    "p3": {
+     "wert": 5,
+     "herkunft": "annahme",
+     "grund": "About $33,600 year one for roughly $49,000 of hours, but unproven and 51 hours uncovered."
+    },
+    "p4": {
+     "wert": 3,
+     "herkunft": "pitch",
+     "grund": "No trial in the quote; care plan has a 12-month minimum."
+    }
+   },
+   "ko": null,
+   "schnitt": 4.4,
+   "optionen": {
+    "A": 3,
+    "B": 5,
+    "C": 6,
+    "D": 2
+   }
+  },
+  {
+   "phase": "schlagabtausch",
+   "sprecher": "skeptic",
+   "an": "cfo",
+   "text": "Starting on the other 22 clients 'now' skips a gate that applies to all 31: there is no Claude Team account and no data agreement yet, and nothing in the documents shows anyone has read those 22 MSAs for NDA or data terms. The odds of a problem there are probably lower than on the nine, but nobody has looked. The consultant who builds the agents and holds a 12-month care plan may also see live client reports, and the quote doesn't say what data they get, so that is possibly a second subcontractor to clear.",
+   "haltung": {
+    "status": "skeptisch",
+    "wert": 3
+   },
+   "kernpunkt": "No data agreement yet, 22 contracts unchecked: legal gate precedes any pilot.",
+   "zugestaendnis": "The clause binds only nine of the 31 contracts, so a reports pilot on the other clients is legally possible once the paperwork is in place.",
+   "bewegt": "nein",
+   "bedingungen": [
+    "Signed data processing agreement with the AI vendor on file before any client export goes into a Claude account",
+    "Written approval from each of the 9 clause clients, or those 9 stay out of the pilot scope",
+    "Other 22 MSAs read for NDA and data terms, result logged before the pilot starts",
+    "Reports-only pilot at a fixed price, cancelable at week 6, with no 12-month care plan signed before the readout",
+    "Written AI policy covering the 6 personal accounts before the pilot kickoff"
+   ],
+   "pruefsteine": {
+    "p1": {
+     "wert": 2,
+     "herkunft": "pitch",
+     "grund": "9 of 31 MSAs limit data to approved subcontractors; no client asked."
+    },
+    "p2": {
+     "wert": 4,
+     "herkunft": "pitch",
+     "grund": "Nine clients' retainers at risk, no exit defined, 12-month care plan lock-in."
+    },
+    "p3": {
+     "wert": 5,
+     "herkunft": "annahme",
+     "grund": "$33,620 year one vs $73,700, but 51 hours uncovered, savings unproven."
+    },
+    "p4": {
+     "wert": 2,
+     "herkunft": "pitch",
+     "grund": "No client approvals or AI policy, no data agreement mentioned; only report sign-off planned."
+    }
+   },
+   "ko": "A legal issue is unresolved: 9 of 31 retainer MSAs allow client data to be processed only by approved subcontractors, and no client has been asked yet.",
+   "schnitt": 3,
+   "optionen": {
+    "A": 2,
+    "B": 5,
+    "C": 6,
+    "D": 3
+   }
+  },
+  {
+   "phase": "schlagabtausch",
+   "sprecher": "sales-lead",
+   "an": "customer",
+   "text": "Nobody has talked to the client who asked why the report was late, and that is one phone call, not a salary. None of last year's four exits named late delivery as the reason, so the $86,400 only counts once we know what that client actually wants. Dana should make that call this week and ask in the same call whether they would join a reports pilot.",
+   "haltung": {
+    "status": "skeptisch",
+    "wert": 4.6
+   },
+   "kernpunkt": "Ask the client who complained before paying for cover.",
+   "zugestaendnis": "One lost retainer, about $32,800 of gross margin at 38 percent, would outweigh the roughly $21,000 the empty seat saves over fifteen weeks.",
+   "bewegt": "nein",
+   "bedingungen": [
+    "Dana calls the client who asked about the late report by October 24 and writes down what they said",
+    "Written yes or no from all nine clients with the subcontractor clause by October 31",
+    "At least 3 pilot clients with written consent before the pilot clock starts",
+    "Consultant quotes a reports-only pilot at a fixed price, cancelable after six weeks, in writing by October 24"
+   ],
+   "pruefsteine": {
+    "p1": {
+     "wert": 6,
+     "herkunft": "pitch",
+     "grund": "Time tracker shows the need in-house, but no client has weighed in on AI-drafted work."
+    },
+    "p2": {
+     "wert": 4,
+     "herkunft": "fehlt",
+     "grund": "No agent draft tested, no client asked, 51 uncovered hours; approval path only named."
+    },
+    "p3": {
+     "wert": 5,
+     "herkunft": "annahme",
+     "grund": "Year one about $33,600 with Priya's time versus $73,700 hire; savings are inferred, unproven."
+    },
+    "p4": {
+     "wert": 2,
+     "herkunft": "pitch",
+     "grund": "No client calls booked; pitch says no client has been asked yet."
+    }
+   },
+   "ko": null,
+   "schnitt": 4.6,
+   "optionen": {
+    "A": 3,
+    "B": 5,
+    "C": 6,
+    "D": 2
+   }
+  },
+  {
+   "phase": "angebote",
+   "sprecher": "cfo",
+   "text": "I'm out at an average of 4.8. There is no spending cap and no stop date, and $12,500 in setup plus a $7,800 care plan lock-in would go in before one report has been drafted. The only version I would fund is a reports-only pilot against the 52 hours a month the time tracker has already measured.",
+   "regel": "average 4.8 below 6.5",
+   "haltung": {
+    "status": "raus"
+   },
+   "optionen": {
+    "A": 3,
+    "B": 3,
+    "C": 6,
+    "D": 3
+   }
+  },
+  {
+   "phase": "angebote",
+   "sprecher": "operator",
+   "text": "No. As pitched, the agents cover 101 hours and Dana told us herself that nobody has the other 51 a month, so vendor, office and people work just slips while two reports are already 3 and 5 days late. I'd back the six-week reports pilot, but only once one named person owns those 51 hours with a written drop list.",
+   "regel": "K.O.: the daily business suffers and nobody takes over the work (also average 4.6 below 6.5)",
+   "haltung": {
+    "status": "raus"
+   },
+   "optionen": {
+    "A": 3,
+    "B": 5,
+    "C": 6,
+    "D": 1
+   }
+  },
+  {
+   "phase": "angebote",
+   "sprecher": "customer",
+   "text": "I'm not buying the full package: $12,500 up front plus a 12-month care plan, with no way to try the agents on even one real report first, and nobody owns the 51 hours of office and people work. A reports-only test is what I'd buy, but nobody has asked the consultant whether they'd price it that way or let me cancel after six weeks.",
+   "regel": "average 4.4 below 6.5",
+   "haltung": {
+    "status": "raus"
+   },
+   "optionen": {
+    "A": 3,
+    "B": 5,
+    "C": 6,
+    "D": 2
+   }
+  },
+  {
+   "phase": "angebote",
+   "sprecher": "skeptic",
+   "text": "I say no, because 9 of your 31 retainer contracts allow client data only with approved subcontractors, nobody has asked those clients, and there is no Claude account or data agreement yet. Settle that first, then I'd look at a small reports pilot.",
+   "regel": "K.O.: a legal issue is unresolved (9 of 31 retainer MSAs, no client asked); average 3.0 below 6.5",
+   "haltung": {
+    "status": "raus"
+   },
+   "optionen": {
+    "A": 2,
+    "B": 5,
+    "C": 6,
+    "D": 3
+   }
+  },
+  {
+   "phase": "angebote",
+   "sprecher": "sales-lead",
+   "text": "I'm out. Nobody has asked the nine clients whose contracts limit who can process their data, and not one report draft has been tested, so there's no tested channel and no meeting booked yet. Dana should call the client who asked about the late report this week and ask the nine about Claude, and the reports pilot is the only path I'd back after that.",
+   "regel": "average 4.6 below 6.5",
+   "haltung": {
+    "status": "raus"
+   },
+   "optionen": {
+    "A": 3,
+    "B": 5,
+    "C": 6,
+    "D": 2
+   }
+  }
+ ],
+ "lauf": {
+  "start": "2026-10-17T16:31:24.611Z",
+  "ende": "2026-10-17T16:40:02.210Z"
+ },
+ "offene_fragen": {
+  "cfo": [
+   "What is your hard spending cap and stop date, and which measured number, such as hours per report against today's 52, decides go or stop?",
+   "What does a reports-only pilot cost in writing, and can the 12-month care plan start only after the pilot passes?"
+  ],
+  "operator": [
+   "Who takes the 51 hours a month of vendor, office and people work starting now, by name, and what do they drop to make room?",
+   "Has the consultant run three real client reports through the agents, and how many minutes did the account manager need to approve each one?"
+  ],
+  "customer": [
+   "Will the consultant run a reports-only pilot at a fixed price, with the care plan and seats cancelable after six weeks if it fails, and what does that cost?",
+   "What is actually working by week two: can the agents draft three real client reports from last month's exports, and how long does approving each one take?"
+  ],
+  "skeptic": [
+   "What do the 9 subcontractor clauses actually say, and will those clients approve Claude in writing before any of their data goes in?",
+   "Is there a signed data processing agreement with Anthropic for your Team account, and what client data do the six people put into personal AI accounts today?"
+  ],
+  "sales-lead": [
+   "Which nine clients carry the approved-subcontractor clause, and will you or an account manager call all nine this month and get a written yes or no on Claude-drafted, human-approved reports?",
+   "Which five of the other 22 clients are in the six-week pilot, with what start dates, and what share of drafts must clear Priya with only minor edits and on time for you to go ahead?"
+  ]
+ },
+ "kernfragen": [
+  {
+   "frage": "Pilot alone, or pilot and recruiting in parallel? The seat could stay empty for fifteen weeks.",
+   "seiten": [
+    {
+     "position": "Test first, the hire is the expensive path",
+     "mitglieder": [
+      "cfo"
+     ]
+    },
+    {
+     "position": "Open recruiting now, the 51 hours and late reports cannot wait",
+     "mitglieder": [
+      "operator",
+      "customer"
+     ]
+    }
+   ]
+  },
+  {
+   "frage": "Can a reports pilot start on the 22 clients without the clause before the nine are asked?",
+   "seiten": [
+    {
+     "position": "Clear the nine first, or the whole plan rests on an unasked question",
+     "mitglieder": [
+      "skeptic",
+      "sales-lead"
+     ]
+    },
+    {
+     "position": "The clause only binds nine clients, a pilot on the others can start now",
+     "mitglieder": [
+      "cfo"
+     ]
+    }
+   ]
+  },
+  {
+   "frage": "Who owns the 51 hours of people, vendor and office work no agent covers?",
+   "seiten": [
+    {
+     "position": "Without a named owner the agent plan is not a replacement for the role",
+     "mitglieder": [
+      "operator",
+      "customer"
+     ]
+    },
+    {
+     "position": "The hours are real but secondary to the reports decision",
+     "mitglieder": [
+      "cfo",
+      "sales-lead"
+     ]
+    }
+   ]
+  }
+ ],
+ "urteil": {
+  "ergebnis": "kein_deal",
+  "begruendung": "No-Go for replacing the role with agents as pitched: all five vote no. Not because agents can't do the work. The 52 hours of monthly reports are measured and repeatable, and every member puts the reports pilot (option C) first. The plan fails on what surrounds the agents. Nine client contracts restrict who may process client data and nobody has asked those clients, there is no Claude account or data agreement yet, 51 hours a month of people, vendor and office work have no owner while reports are already late, and the quote locks in $12,500 plus a 12-month care plan before one real report has been drafted. Rehiring right away is not the answer either: it commits $73,700 a year before anyone knows whether 101 hours go away. The council's path is a priced, cancelable reports pilot with the legal and staffing gates cleared first.",
+  "einwaende": [
+   {
+    "von": "skeptic",
+    "text": "9 of 31 retainer contracts allow client data only with approved subcontractors, nobody has asked those clients, and there is no data agreement for a Claude account.",
+    "ausraeumen": "Sign the data agreement, read the other 22 contracts, and get a written yes from the nine. Until then the nine stay out of any pilot."
+   },
+   {
+    "von": "operator",
+    "text": "51 hours a month of vendor, office and people work have no owner, while two reports already went out 3 and 5 days late.",
+    "ausraeumen": "Name one person for the 51 hours by October 24, with a written list of what they drop. If they are still uncovered at the pilot readout, open the search that day."
+   },
+   {
+    "von": "cfo",
+    "text": "$12,500 setup and a 12-month care plan go in before a single report has been drafted. There is no spending cap and no stop date, and the payback depends on hours nobody has measured as saved.",
+    "ausraeumen": "Get a fixed-price, reports-only pilot in writing, cancelable after six weeks. Go only if report time, approval included, falls from 52 to about 16 hours a month."
+   }
+  ],
+  "naechster_schritt": "This week Dana calls the client who asked about the late report and asks the consultant for a fixed-price, reports-only pilot that can be cancelled after six weeks. No care plan and no recruiter contract until the pilot readout.",
+  "wertung": {
+   "punktwert": 4.3,
+   "spanne": 1.8,
+   "sicherheit": 3,
+   "je": {
+    "cfo": {
+     "gewicht": 3,
+     "start": 5,
+     "ende": 4.8,
+     "ko": null,
+     "sicherheit": 3,
+     "entscheidung": "raus"
+    },
+    "operator": {
+     "gewicht": 3,
+     "start": 4.6,
+     "ende": 4.6,
+     "ko": "The daily business suffers and nobody takes over the work. As pitched (agents, no hire), two October reports already went out 3 and 5 days late, and the 51 hours a month of vendor, office and people work are marked open.",
+     "sicherheit": 3,
+     "entscheidung": "raus"
+    },
+    "customer": {
+     "gewicht": 2,
+     "start": 4.4,
+     "ende": 4.4,
+     "ko": null,
+     "sicherheit": 3,
+     "entscheidung": "raus"
+    },
+    "skeptic": {
+     "gewicht": 2,
+     "start": 3,
+     "ende": 3,
+     "ko": "A legal issue is unresolved: 9 of 31 retainer MSAs allow client data to be processed only by approved subcontractors, and no client has been asked yet.",
+     "sicherheit": 3,
+     "entscheidung": "raus"
+    },
+    "sales-lead": {
+     "gewicht": 1,
+     "start": 4.6,
+     "ende": 4.6,
+     "ko": null,
+     "sicherheit": 3,
+     "entscheidung": "raus"
+    }
+   },
+   "optionen": {
+    "A": {
+     "schnitt": 2.8,
+     "spanne": 1
+    },
+    "B": {
+     "schnitt": 4.5,
+     "spanne": 2
+    },
+    "C": {
+     "schnitt": 6,
+     "spanne": 0
+    },
+    "D": {
+     "schnitt": 2.2,
+     "spanne": 2
+    }
+   },
+   "beste": "C"
+  },
+  "stufe": "los_mit_bedingungen"
+ },
+ "kosten": {
+  "agenten": 15,
+  "tokens": 1622042,
+  "agent_typ": "ratsmitglied",
+  "usd": {
+   "moderation": 1.65,
+   "rat": 2.03,
+   "gesamt": 3.68
+  },
+  "moderation": {
+   "modell": "claude-opus-5-5",
+   "anfragen": 16,
+   "ausgabe": 9478,
+   "cache_lesen": 5979550,
+   "cache_schreiben": 32557
+  },
+  "fenster": {
+   "von": "2026-10-17T16:31:24.611Z",
+   "bis": "2026-10-17T16:40:02.210Z"
+  },
+  "preise_stand": "2026-10-06",
+  "hinweis": "API-Listenpreise aus den Claude-Code-Protokollen nachgerechnet. Die letzte Antwort eines Agenten fehlt teils im Protokoll, ihre Ausgabe ist dann nicht enthalten."
+ },
+ "film": {
+  "pitch": "A 22-person agency wants to replace its ops coordinator with AI agents.",
+  "beitraege": [
+   3,
+   1,
+   13,
+   15
+  ],
+  "urteil": [
+   "No-Go for agents instead of the hire.",
+   "All five put a six-week reports pilot first, once the client contracts are cleared."
+  ]
+ }
+}

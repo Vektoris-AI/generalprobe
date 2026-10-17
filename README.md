@@ -1,30 +1,37 @@
+English · [Deutsch](README.de.md)
+
 # Generalprobe
 
-Die Generalprobe für deine Entscheidung: Ein Rat aus KI-Agenten prüft deine Idee, bevor du Geld und
-Monate hineinsteckst.
+A dress rehearsal for your decision ("Generalprobe" is German for dress rehearsal): a council of AI agents tests
+your idea before you put money and months into it.
 
-Du beschreibst ein Vorhaben – eine Geschäftsidee, ein Angebot, einen Preis, eine Entscheidung. Fünf
-Ratsmitglieder nehmen es auseinander: Jedes hat ein eigenes Dossier und genau eine Leitfrage, alle fragen
-nach, widersprechen sich gegenseitig und stimmen am Ende ab: **Nein** oder **Ja, wenn …**. Das Ergebnis
-spielt eine Bühnen-Ansicht ab: Die Avatare sprechen silbengenau mit, blinzeln und nicken.
+You describe a proposal: a business idea, an offer, a price, a decision. Five council members take it apart. Each
+one has their own dossier and exactly one lead question. They cross-examine you, argue with each other, and at the
+end they vote: **No** or **Yes, if …**. A stage view plays the session back: the avatars lip-sync syllable by
+syllable, blink, and nod.
 
-Der Beispielrat sitzt so, wie er in vielen Mittelständlern sitzen könnte:
+Two example councils ship with it, seated the way a council could sit in many owner-led companies. The English one
+lives in `skill/council/`:
 
-| Mitglied | Leitfrage |
+| Member | Lead question |
 |---|---|
-| Die Vertriebsleiterin | Wer kauft das – und wie kommen wir an genau diese Leute ran? |
-| Der Kaufmann | Was kostet es, was bringt es – und wann ist das Geld zurück? |
-| Die Kundin | Würde ich das kaufen – und was nervt mich daran? |
-| Der Meister | Wer macht die Arbeit – und schaffen wir das neben dem Tagesgeschäft? |
-| Die Skeptikerin | Was kann schiefgehen – und dürfen wir das überhaupt? |
+| The Sales Lead | Who buys this, and how do we reach exactly those people? |
+| The CFO | What does it cost, what does it bring, and when is the money back? |
+| The Customer | Would I buy this, and what would annoy me about it? |
+| The Operator | Who does the work, and can we pull it off next to the daily grind? |
+| The Skeptic | What can go wrong, and are we even allowed to do this? |
 
-## Was du brauchst
+The German one lives in `skill/rat/` (Die Vertriebsleiterin, Der Kaufmann, Die Kundin, Der Meister, Die
+Skeptikerin). If your pitch is in English, the session gets `"sprache": "en"` and the panel comes from
+`skill/council/`.
 
-- [Claude Code](https://claude.com/claude-code) – der Rat läuft als Skill mit Sub-Agenten
-- Node.js 18 oder neuer
-- optional: `ffmpeg` (verkleinert die Avatare) und ein [kie.ai](https://kie.ai)-Konto für eigene Avatare
+## What you need
 
-## Startklar in fünf Minuten
+- [Claude Code](https://claude.com/claude-code): the council runs as a skill with sub-agents
+- Node.js 18 or newer
+- optional: `ffmpeg` (shrinks the avatars) and a [kie.ai](https://kie.ai) account for your own avatars
+
+## Set up in five minutes
 
 ```bash
 git clone https://github.com/Vektoris-AI/generalprobe.git
@@ -33,118 +40,113 @@ ln -s "$PWD/skill" ~/.claude/skills/generalprobe
 ln -s "$PWD/agents/ratsmitglied.md" ~/.claude/agents/ratsmitglied.md
 ```
 
-Danach Claude Code neu starten, damit der Agent-Typ `ratsmitglied` geladen wird. Er darf nur lesen
-und braucht dadurch rund 70 % weniger Tokens als ein Allzweck-Agent.
+Then restart Claude Code so it loads the agent type `ratsmitglied` ("council member"). It can only read files,
+which is why it uses about 70% fewer tokens than a general-purpose agent.
 
-Dann in Claude Code:
+Then, in Claude Code:
 
 ```
-/generalprobe auto Wir wollen für unsere Bäckerei einen Lieferdienst für Firmenfrühstücke starten …
+/generalprobe auto We run a 22-person marketing agency in Denver. Our ops coordinator left. Do we rehire, or set up AI agents to do the work instead? …
 ```
 
-Ohne `auto` stellt dir der Rat seine Fragen und wartet auf deine Antworten – so lernst du am meisten.
-Die Bühne öffnest du so:
+Without `auto`, the council asks you its questions and waits for your answers. That's how you learn the most.
+To open the stage:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-und dann im Browser `http://localhost:8000/viewer/`.
+and then go to `http://localhost:8000/viewer/` in your browser.
 
-## Wie der Rat urteilt
+## Example session
 
-Alle Mitglieder rechnen nach denselben Regeln (`skill/urteilsregeln.md`), jedes mit eigenen Ankern im Abschnitt
-„So entscheide ich" seines Dossiers:
+`sessions/2026-10-17-example-agency` is a complete session: a fictional 22-person marketing agency in Denver
+decides whether to rehire an ops coordinator or set up AI agents instead. With the server from above running:
 
-- **Vier Prüfsteine** von 0 bis 10, der erste zählt doppelt. Daraus ergibt sich der Schnitt.
-- **Belegpflicht:** Was nur behauptet ist, bekommt höchstens 6, was fehlt, höchstens 4.
-- **K.O.-Kriterien** je Mitglied und eine feste Schwelle: Ja nur ab Schnitt 6,5.
-- **Optionen:** Nennst du mehrere Wege (immer auch „lassen"), bewertet jedes Mitglied jeden. Das Urteil endet
-  mit einer Stufe: los, los mit Bedingungen, umbauen, warten oder lassen.
+- Stage view: `http://localhost:8000/viewer/index.html#2026-10-17-example-agency`
+- Film view: `http://localhost:8000/viewer/film.html#2026-10-17-example-agency&format=16x9`
 
-Die Regeln machen jedes Urteil nachvollziehbar: Du siehst, an welchem Prüfstein es hängt und welcher Beleg fehlt.
-Der Rat bleibt eine KI-Simulation. Er urteilt über das, was du ihm gibst, und sagt nicht voraus, was echte
-Menschen tun.
+## How the council judges
 
-## Unterlagen
+All members follow the same rules (`skill/urteilsregeln.en.md`), each with its own anchors in the "How I decide"
+section of its dossier:
 
-Der Pitch-Text hat höchstens 150 Wörter. Zahlen, Preise und Kosten gehören in Unterlagen, die jedes Mitglied
-vollständig liest, bevor es urteilt:
+- **Four criteria** from 0 to 10; the first counts double. Together they give the average.
+- **Evidence rule:** what is only claimed gets 6 at most, what is missing gets 4 at most.
+- **K.O. criteria** for each member and a fixed threshold: Yes only from an average of 6.5.
+- **Options:** if you name several paths (always including "drop it"), every member scores each one. The verdict
+  ends with a level: go, go with conditions, rework, wait, or drop.
+
+The rules make every verdict traceable: you see which criterion it hinges on and which piece of evidence is
+missing. The council is still an AI simulation. It judges what you give it and does not predict what real people
+will do.
+
+## Documents
+
+The pitch text has at most 150 words. Numbers, prices, and costs go into documents that every member reads in full
+before judging (`unterlagen` is German for documents):
 
 ```
-/generalprobe unterlagen: unterlagen/meine-firma.md Sollen wir einen Lieferdienst starten?
+/generalprobe unterlagen: unterlagen/my-company.md Should we rehire our ops coordinator?
 ```
 
-Vorlage ist `unterlagen/beispiel-baeckerei.md` (erfunden). Wichtig ist die **volle Kostenstruktur**, also auch
-Gehälter und ein Unternehmerlohn für dich selbst, sonst rechnet der Rat dein Vorhaben schöner, als es ist.
-Ohne Unterlagen rechnen die Mitglieder Kosten und Reichweite nicht selbst aus. Eigene Unterlagen bleiben per
-`.gitignore` auf deinem Rechner.
+The template is `unterlagen/example-agency.md` (fictional; the German one is `unterlagen/beispiel-baeckerei.md`).
+What matters is the **full cost structure**, including salaries with benefits and a salary for yourself as the
+owner. Otherwise the council makes your proposal look better than it is. Without documents, the members don't
+work out costs and runway on their own. Your own documents stay on your machine through `.gitignore`.
 
-## Deinen eigenen Rat bauen
+## Build your own council
 
-1. `skill/rat/_vorlage.md` kopieren, als `skill/rat/<kurzname>.md` speichern und ausfüllen. Je genauer
-   Kriterien, Fragen und rote Flaggen, desto besser das Urteil.
-2. Echte Kolleginnen und Kollegen? Dann ein kurzes Interview führen (Wie entscheidest du? Wann sagst du
-   Nein?) – und **nur mit ihrer Einwilligung** nachbilden.
-3. Avatar: Im Frontmatter `aussehen:` beschreiben (für eine erfundene Figur) oder `foto:` angeben (nur mit
-   Einwilligung der abgebildeten Person). Dann:
+1. Copy `skill/council/_template.md`, save it as `skill/council/<short-name>.md`, and fill it in. The more precise
+   the criteria, questions, and red flags, the better the verdict. The frontmatter keys stay German
+   (`etikett` = label, `leitfrage` = lead question, `branchen` = fields, `aussehen` = appearance) because the
+   scripts read them; the values are English.
+2. Real colleagues? Then do a short interview (How do you decide? When do you say no?), and model them **only with
+   their consent**.
+3. Avatar: describe it in the frontmatter under `aussehen:` (for an invented character) or set `foto:` (only with
+   the consent of the person shown). The English example members reuse the faces of the German ones through
+   `avatar:` (The CFO has `avatar: kaufmann`). For a new member:
 
 ```bash
-export KIE_API_KEY=…            # oder KIE_API_KEY=… in eine .env im Repo
-node scripts/avatare.mjs submit alle --ok          # Avatare
-node scripts/avatare.mjs submit alle --varianten --ok   # Mundformen und Blinzeln für die Animation
+export KIE_API_KEY=…            # or KIE_API_KEY=… in a .env in the repo
+node scripts/avatare.mjs submit alle --ok          # avatars (alle = all)
+node scripts/avatare.mjs submit alle --varianten --ok   # mouth shapes and blinking for the animation
 node scripts/avatare.mjs wait
-node scripts/sitzung.mjs                            # Ansicht neu einlesen
+node scripts/sitzung.mjs                            # reload the view
 ```
 
-Ohne Avatare zeigt die Bühne Initialen.
+Without avatars, the stage shows initials.
 
-## Was der Rat außerdem kann
+## What else the council can do
 
-- **Kosten sehen:** Unter jedem Urteil steht, wie viele Agenten liefen, wie viele Tokens das waren und was das
-  zum API-Listenpreis ungefähr kostet (`scripts/kosten.mjs` rechnet aus den Protokollen von Claude Code).
-- **Wiedervorlage:** `/generalprobe wiedervorlage <sitzung>` – derselbe Rat prüft nach ein paar Wochen,
-  welche Einwände ausgeräumt sind und welche noch offen.
-- **Film:** `viewer/film.html#<sitzung>&format=4x5` (oder `16x9`) spielt eine Sitzung als kurzen Clip auf der
-  Sofa-Bühne ab, mit Kamerafahrt und Kernsätzen. Welche Beiträge vorkommen, steht im Feld `film` der Sitzung.
-  Die Sofa-Szene gibt es bisher für den Beispielrat.
-- **Rückvergleich:** `/generalprobe rueckvergleich` – schick frühere Entscheidungen mit bekanntem Ausgang
-  durch den Rat (Vorlage `sessions/rueckvergleich/faelle.beispiel.json`) und miss, wie oft er richtig
-  gelegen hätte. Erst danach weißt du, wie viel du seinem Urteil glauben solltest.
+- **See the cost:** under every verdict it says how many agents ran, how many tokens that was, and roughly what
+  that costs at API list price (`scripts/kosten.mjs` calculates it from Claude Code's logs).
+- **Follow-up:** `/generalprobe wiedervorlage <session>`: after a few weeks, the same council checks which
+  objections are resolved and which are still open.
+- **Film:** `viewer/film.html#<session>&format=4x5` (or `16x9`) plays a session as a short clip on the sofa stage,
+  with camera moves and key sentences. Which contributions appear is set in the session's `film` field. So far the
+  sofa scene exists for the example council.
+- **Back-test:** `/generalprobe rueckvergleich`: run past decisions with a known outcome through the council
+  (template `sessions/rueckvergleich/faelle.beispiel.json`) and measure how often it would have been right. Only
+  then do you know how much you should trust its verdict.
+- **Funding pitch:** with `investoren` in the call, members make offers for a stake instead of voting, and you
+  negotiate. This format is described in the [German README](README.de.md).
 
-## Zwei Formate
+## Play fair
 
-- **Abstimmung** (Standard): Am Ende stimmt jedes Mitglied ab – Nein oder Ja unter Bedingungen. Gut für
-  Entscheidungen, Angebote und Preise.
-- **Investoren**: Die Mitglieder machen Angebote, und es wird verhandelt. Gut, um einen Pitch oder eine
-  Finanzierungsrunde zu üben, bevor du vor echte Geldgeber gehst:
+- Don't model real people without their consent, and certainly not in public or in advertising.
+- The council is a simulation. It does not replace tax, legal, or financial advice.
+- Check what the council claims. It works with what you give it and can be wrong.
 
-  ```
-  /generalprobe investoren forderung: 50.000 € für 10 % unterlagen: unterlagen/meine-firma.md Wir bauen …
-  ```
+## Credits
 
-  Aus der Forderung wird deine Bewertung: 50.000 € für 10 % heißt 500.000 € nach dem Investment
-  (Post-Money) und 450.000 € davor (Pre-Money). Jedes Angebot zeigt dieselbe Rechnung und den Abschlag
-  auf deine Bewertung, das Urteil die Spanne aller Angebote. So siehst du, ob deine Bewertung im Rat trägt,
-  und kannst mehrere Forderungen gegeneinander testen. Suchst du kein Geld, schreib `forderung: keine`.
+The idea comes from Nate Herk's Claude skill "/roast-room"
+([post on X](https://x.com/nateherk/status/2109841753628914090)). This version comes from
+[Vektoris](https://vektoris.io): we build knowledge systems and AI automation for small and mid-sized businesses.
 
-## Fair bleiben
+**Want Generalprobe with your own people**, fed by what your company knows, with a quarterly follow-up and a log
+of how often it was right? We set that up for you: [vektoris.io](https://vektoris.io) · kontakt@vektoris.de
 
-- Bilde keine echten Personen ohne deren Einwilligung nach – erst recht nicht öffentlich oder in Werbung.
-- Der Rat ist eine Simulation. Er ersetzt keine Steuer-, Rechts- oder Finanzberatung.
-- Prüfe, was der Rat behauptet. Er arbeitet mit dem, was du ihm gibst, und kann sich irren.
+## License
 
-## Herkunft
-
-Die Idee stammt von Nate Herks Claude-Skill „/roast-room"
-([Post auf X](https://x.com/nateherk/status/2109841753628914090)). Diese deutsche Fassung kommt von
-[Vektoris](https://vektoris.de) – wir bauen Wissenssysteme und KI-Automatisierung für kleine und mittlere
-Unternehmen.
-
-**Ihr wollt die Generalprobe mit euren eigenen Leuten** – gespeist aus dem Wissen eures Betriebs, mit
-Wiedervorlage im Quartal und einem Logbuch, wie oft er richtig lag? Das richten wir euch ein:
-[vektoris.de](https://vektoris.de) · kontakt@vektoris.de
-
-## Lizenz
-
-MIT – siehe [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).

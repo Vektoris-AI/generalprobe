@@ -6,4 +6,5 @@ sessions/*.verlauf.txt
 # Eigene Unterlagen enthalten echte Zahlen und bleiben lokal; im Repo liegt nur das erfundene Beispiel
 unterlagen/*
 !unterlagen/beispiel-*.md
+!unterlagen/example-*.md
 sessions/*.unterlagen.md

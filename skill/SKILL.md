@@ -1,6 +1,6 @@
 ---
 name: generalprobe
-description: Eine Idee, ein Angebot, einen Preis oder eine Entscheidung in einer Generalprobe prüfen. Fünf Ratsmitglieder laufen als Sub-Agenten mit eigenem Dossier durch Pitch → Erster Eindruck → Kreuzverhör → Schlagabtausch → Votum → Urteil; das Ergebnis ist eine Sitzung, die eine Bühnen-Ansicht abspielt. Nutzen bei: „frag den Beirat", „KI-Beirat", „stress-test diese Idee", „prüf dieses Angebot", „was spricht dagegen", „Pitch üben".
+description: Eine Idee, ein Angebot, einen Preis oder eine Entscheidung in einer Generalprobe prüfen. Fünf Ratsmitglieder laufen als Sub-Agenten mit eigenem Dossier durch Pitch → Erster Eindruck → Kreuzverhör → Schlagabtausch → Votum → Urteil; das Ergebnis ist eine Sitzung, die eine Bühnen-Ansicht abspielt. Nutzen bei: „frag den Beirat", „KI-Beirat", „stress-test diese Idee", „prüf dieses Angebot", „was spricht dagegen", „Pitch üben", "stress-test this idea", "roast my plan", "what could go wrong".
 ---
 
 # Generalprobe
@@ -18,6 +18,7 @@ echten Pfad nehmen, z. B. `cd "<Base directory>" && pwd -P`, dann eine Ebene hö
 |---|---|
 | Urteilsregeln (für alle) | `ROOT/skill/urteilsregeln.md`: vier Prüfsteine, Belegpflicht, K.O., Entscheidungsregel |
 | Ratsmitglieder | `ROOT/skill/rat/<slug>.md` — Frontmatter `name`, `etikett`, `leitfrage`, `branchen`; Abschnitt „So entscheide ich“ |
+| Englischer Rat | `ROOT/skill/council/<slug>.md` — gleiche Felder plus `avatar` (Bildsatz eines deutschen Mitglieds), Abschnitt „How I decide“; Regeln `ROOT/skill/urteilsregeln.en.md` |
 | Runden | `node ROOT/scripts/runde.mjs …`: Aufträge schreiben, Antworten holen, Regeln prüfen, Prüfsteine rechnen |
 | Kosten und Zitate | `node ROOT/scripts/kosten.mjs <id>`, `node ROOT/scripts/zitate.mjs <id>` |
 | Vorlage für neue Mitglieder | `ROOT/skill/rat/_vorlage.md` |
@@ -48,6 +49,10 @@ du ihn als Kernfrage an das passende Mitglied. Texte der Mitglieder tippst du ni
 den Agent-Protokollen und prüft sie gegen die Urteilsregeln.
 
 ### 0 · Vorhaben aufnehmen
+**Sprache:** Ist das Vorhaben auf Englisch, bekommt die Sitzung `"sprache": "en"` und das Panel kommt aus
+`skill/council/` (The Sales Lead, The Operator, The Customer, The CFO, The Skeptic). Aufträge, Verlauf, Regeln, Bühne
+und Protokoll sind dann englisch, Kernfragen, Urteil und Antworten im Kreuzverhör schreibst du ebenfalls auf Englisch.
+Deutsche Vorhaben nutzen `skill/rat/`. Die beiden Räte nicht mischen.
 **Format `investoren`:** Die Forderung (`forderung: 50.000 € für 10 %` oder `keine`) gibt der Nutzer an; fehlt sie,
 einmal fragen, nie selbst ansetzen. `runde.mjs` rechnet daraus die Bewertung und je Angebot den Abschlag.
 **Unterlagen:** Neben dem kurzen Pitch-Text entsteht `ROOT/sessions/<id>.unterlagen.md` mit belegten Zahlen,

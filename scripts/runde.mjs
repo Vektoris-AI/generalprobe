@@ -19,6 +19,8 @@ const datei = path.join(root, 'sessions', id + '.json'), verlauf = path.join(roo
 if (!cmd || !id || !fs.existsSync(datei)) { console.error('Sitzung fehlt: sessions/<id>.json zuerst anlegen (Pitch, Panel, "live": true).'); process.exit(1); }
 const s = JSON.parse(fs.readFileSync(datei, 'utf8'));
 const beirat = s.format === 'beirat';
+// Sprache der Sitzung: "sprache": "en" schreibt Aufträge, Verlauf und Regeltexte auf Englisch (Rat aus skill/council/)
+const EN = s.sprache === 'en', t = (de, en) => EN ? en : de;
 const speichern = () => fs.writeFileSync(datei, JSON.stringify(s, null, 1) + '\n');
 const pruefen = () => { try { console.log(execFileSync('node', [path.join(root, 'scripts/sitzung.mjs'), id], { encoding: 'utf8' }).split('\n')[0]); } catch (e) { console.error(String(e.stdout || e.message)); } };
 
@@ -26,11 +28,11 @@ const pruefen = () => { try { console.log(execFileSync('node', [path.join(root, 
 const front = t => Object.fromEntries((t.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? '').split('\n').map(z => z.match(/^([a-z_0-9]+):\s*(.*)$/)).filter(Boolean)
   .map(([, k, v]) => [k, v.startsWith('[') ? v.slice(1, -1).split(',').map(x => x.trim()).filter(Boolean) : v.replace(/^["“„]|["”“]$/g, '')]));
 const dossier = slug => { for (const d of fs.readdirSync(path.join(root, 'skill'), { withFileTypes: true })) { const f = path.join(root, 'skill', d.name, slug + '.md'); if (d.isDirectory() && fs.existsSync(f)) return { pfad: f, ...front(fs.readFileSync(f, 'utf8')) }; } throw new Error('Dossier fehlt: ' + slug); };
-const name = x => x === 'gruender' ? s.pitch.gruender : x === 'moderator' ? 'Moderation' : (dossier(x).name ?? x);
+const name = x => x === 'gruender' ? s.pitch.gruender : x === 'moderator' ? t('Moderation', 'Moderator') : (dossier(x).name ?? x);
 const panel = s.panel.map(p => p.slug);
 const slugs = (txt) => txt && !txt.startsWith('--') ? txt.split(',').map(x => x.trim()) : panel;
-const euro = n => new Intl.NumberFormat('de-DE').format(n) + ' €';
-const zahl = n => n == null ? '–' : String(n).replace('.', ',');
+const euro = n => EN ? '$' + new Intl.NumberFormat('en-US').format(n) : new Intl.NumberFormat('de-DE').format(n) + ' €';
+const zahl = n => n == null ? '–' : EN ? String(n) : String(n).replace('.', ',');
 
 // Prüfsteine: Obergrenzen nach Herkunft, Schnitt = (2·P1 + P2 + P3 + P4) / 5
 const DECKEL = { fehlt: 4, annahme: 6, pitch: 10 };
@@ -47,7 +49,7 @@ function normPS(ps = {}) {
 const schnitt = ps => ['p1', 'p2', 'p3', 'p4'].every(k => ps[k]) ? Math.round((2 * ps.p1.wert + ps.p2.wert + ps.p3.wert + ps.p4.wert) / 5 * 10) / 10 : null;
 const stand = slug => { const z = {}; for (const b of s.beitraege) if (b.sprecher === slug && b.pruefsteine) Object.assign(z, { ps: b.pruefsteine, ko: b.ko ?? z.ko ?? null, schnitt: b.schnitt, sicherheit: b.sicherheit ?? z.sicherheit }); return z; };
 const status = (ko, sn) => ko || sn == null || sn < 6.5 ? 'skeptisch' : 'interessiert';
-const regel = (z) => z.ko ? { erlaubt: false, grund: 'K.O.: ' + z.ko } : z.schnitt == null ? { erlaubt: false, grund: 'keine Prüfsteine' } : z.schnitt < 6.5 ? { erlaubt: false, grund: `Schnitt ${zahl(z.schnitt)} unter 6,5` } : !beirat && (z.ps?.p4?.wert ?? 0) < 7 ? { erlaubt: false, grund: `Hebel ${z.ps?.p4?.wert} unter 7` } : { erlaubt: true, grund: `Schnitt ${zahl(z.schnitt)}${beirat ? '' : `, Hebel ${z.ps.p4.wert}`}` };
+const regel = (z) => z.ko ? { erlaubt: false, grund: 'K.O.: ' + z.ko } : z.schnitt == null ? { erlaubt: false, grund: t('keine Prüfsteine', 'no criteria scores') } : z.schnitt < 6.5 ? { erlaubt: false, grund: t(`Schnitt ${zahl(z.schnitt)} unter 6,5`, `average ${zahl(z.schnitt)} below 6.5`) } : !beirat && (z.ps?.p4?.wert ?? 0) < 7 ? { erlaubt: false, grund: t(`Hebel ${z.ps?.p4?.wert} unter 7`, `leverage ${z.ps?.p4?.wert} below 7`) } : { erlaubt: true, grund: `${t('Schnitt', 'average')} ${zahl(z.schnitt)}${beirat ? '' : `, ${t('Hebel', 'leverage')} ${z.ps.p4.wert}`}` };
 // Pitch-Unterlagen, die alle Mitglieder lesen: Feld „unterlagen“ (Pfad relativ zum Repo oder absolut), sonst sessions/<id>.unterlagen.md
 const UNTERLAGEN = s.unterlagen ? path.resolve(root, s.unterlagen) : fs.existsSync(path.join(root, 'sessions', id + '.unterlagen.md')) ? path.join(root, 'sessions', id + '.unterlagen.md') : null;
 if (s.unterlagen && !fs.existsSync(UNTERLAGEN)) { console.error('Unterlagen fehlen: ' + UNTERLAGEN); process.exit(1); }
@@ -66,27 +68,42 @@ const optText = () => OPT.map(o => `${o.id}) ${o.text}`).join('\n');
 function normOpt(o = {}) { const out = {}; for (const x of OPT) if (o[x.id] != null) out[x.id] = Math.max(0, Math.min(10, Number(o[x.id]))); return out; }
 const optZeile = o => o && Object.keys(o).length ? OPT.map(x => `${x.id} ${o[x.id] ?? '–'}`).join(' · ') : '';
 const optStand = slug => { let o = {}; for (const b of s.beitraege) if (b.sprecher === slug && b.optionen) o = { ...o, ...b.optionen }; return o; };
-const psZeile = (ps, sn, ko) => ps ? `P1 ${ps.p1?.wert} · P2 ${ps.p2?.wert} · P3 ${ps.p3?.wert} · P4 ${ps.p4?.wert} · Schnitt ${zahl(sn)}${ko ? ' · K.O.: ' + ko : ''}` : '';
+const psZeile = (ps, sn, ko) => ps ? `P1 ${ps.p1?.wert} · P2 ${ps.p2?.wert} · P3 ${ps.p3?.wert} · P4 ${ps.p4?.wert} · ${t('Schnitt', 'Average')} ${zahl(sn)}${ko ? ' · K.O.: ' + ko : ''}` : '';
 function verlaufZeile(b) {
   const h = b.haltung ? ` (${b.haltung.status}${b.schnitt != null ? ' ' + zahl(b.schnitt) : ''})` : '';
-  const ang = b.angebot && b.haltung?.status !== 'raus' ? ` [${b.angebot.betrag == null ? 'Ja, wenn' : `Angebot ${euro(b.angebot.betrag)} für ${b.angebot.anteil} %`}: ${(b.angebot.bedingungen ?? []).join('; ')}]` : '';
-  const ps = b.pruefsteine ? ` {${psZeile(b.pruefsteine, b.schnitt, b.ko)}${b.optionen ? ` · Optionen ${optZeile(b.optionen)}` : ''}}` : '';
-  fs.appendFileSync(verlauf, `[${b.phase}] ${name(b.sprecher)} → ${b.an ? name(b.an) : 'alle'}: ${b.text}${ang}${h}${ps}\n`);
+  const ang = b.angebot && b.haltung?.status !== 'raus' ? ` [${b.angebot.betrag == null ? t('Ja, wenn', 'Yes, if') : t(`Angebot ${euro(b.angebot.betrag)} für ${b.angebot.anteil} %`, `Offer ${euro(b.angebot.betrag)} for ${b.angebot.anteil} %`)}: ${(b.angebot.bedingungen ?? []).join('; ')}]` : '';
+  const ps = b.pruefsteine ? ` {${psZeile(b.pruefsteine, b.schnitt, b.ko)}${b.optionen ? ` · ${t('Optionen', 'Options')} ${optZeile(b.optionen)}` : ''}}` : '';
+  fs.appendFileSync(verlauf, `[${b.phase}] ${name(b.sprecher)} → ${b.an ? name(b.an) : t('alle', 'everyone')}: ${b.text}${ang}${h}${ps}\n`);
 }
 function live(phase, txt) { if (s.live) { s.live_phase = phase; s.live_status = txt; } }
 
 // Aufträge
 // Rahmen der Rolle: aus der Sitzung (Feld rahmen), sonst neutral nach Format
-const ROLLE = s.rahmen ?? (beirat ? 'im Rat „Generalprobe“, einer KI-Simulation' : 'in einer Investoren-Runde, einer KI-Simulation');
-const AUFGABE = {
+const ROLLE = s.rahmen ?? (EN ? (beirat ? 'on the council "Generalprobe", an AI simulation' : 'in an investor round, an AI simulation') : beirat ? 'im Rat „Generalprobe“, einer KI-Simulation' : 'in einer Investoren-Runde, einer KI-Simulation');
+const AUFGABE_DE = {
   eindruck: 'Bewerte das Vorhaben nach deinen vier Prüfsteinen (Urteilsregeln 1–5): je Prüfstein Wert, Herkunft und Grund, dazu K.O. und Schnitt. Dann dein erster Eindruck im eigenen Ton (text, 2–4 Sätze, direkt mit deinem stärksten Punkt) und zwei Fragen an die Gründer, die deine schwächsten Prüfsteine klären würden.',
   schlagabtausch: 'Lies im Verlauf die KERNFRAGEN und alle Beiträge davor. Widersprich genau einem anderen Mitglied in 2–3 Sätzen, ohne seinen Namen im Text zu nennen, und bring einen Punkt, den in dieser Runde noch keiner gebracht hat. Gestehe den stärksten Punkt der Gegenseite zu oder sag, warum er nicht trägt. Ändere Prüfsteine nur für ein besseres Argument oder einen neuen Fakt aus dem Kreuzverhör, und gib nur die geänderten an.',
   angebote: beirat ? 'Stimme nach der Entscheidungsregel (Urteilsregeln 6) mit deinem aktuellen Stand ab: „ja_wenn“ mit prüfbaren Bedingungen oder „nein“ mit 1–2 Sätzen im eigenen Ton.'
     : 'Entscheide nach der Entscheidungsregel (Urteilsregeln 6) mit deinem aktuellen Stand. Beim Ausstieg 1–2 Sätze im eigenen Ton mit deiner Absage-Formel. Ein Angebot nennt Betrag, Anteil und Bedingungen im Stil von „Wenn ich biete“ aus deinem Dossier; du darfst ein anderes Mitglied als Partner vorschlagen (mit).',
   verhandlung: 'Die Gründer antworten auf dein Angebot (letzte Zeilen im Verlauf). Entscheide: annehmen, ablehnen oder nachbessern. Beim Nachbessern das vollständige Angebot mit allen Bedingungen neu nennen.',
 };
-const PS = '{"wert": 0, "herkunft": "pitch|annahme|fehlt", "grund": "≤ 15 Wörter"}';
-const FORMAT = {
+// Englische Aufgaben: gleiche Logik, die JSON-Schlüssel und Werte (nein, ja_wenn, pitch, annahme, fehlt) bleiben maschinenlesbar
+const AUFGABE_EN = {
+  eindruck: 'Score the proposal on your four criteria (rules 1–5): for each criterion a value, its source and a reason, plus K.O. and average. Then your first impression in your own voice (text, 2–4 sentences, open with your strongest point) and two questions to the founders that would settle your weakest criteria.',
+  schlagabtausch: 'Read the KEY QUESTIONS in the transcript and every contribution before them. Push back on exactly one other member in 2–3 sentences, without naming them in your text, and bring a point nobody has made in this round yet. Concede the strongest point of the other side or say why it does not hold. Change criteria scores only for a better argument or a new fact from the cross-examination, and list only the changed ones.',
+  angebote: beirat ? 'Vote by the decision rule (rules 6) with your current scores: "ja_wenn" (yes, if) with checkable conditions, or "nein" (no) with 1–2 sentences in your own voice.'
+    : 'Decide by the decision rule (rules 6) with your current scores. If you drop out, 1–2 sentences in your own voice. An offer names amount, equity and conditions; you may propose another member as partner (mit).',
+  verhandlung: 'The founders answer your offer (last lines of the transcript). Decide: accept, decline or improve. If you improve, restate the complete offer with all conditions.',
+};
+const AUFGABE = EN ? AUFGABE_EN : AUFGABE_DE;
+const PS = t('{"wert": 0, "herkunft": "pitch|annahme|fehlt", "grund": "≤ 15 Wörter"}', '{"wert": 0, "herkunft": "pitch|annahme|fehlt", "grund": "≤ 15 words"}');
+const FORMAT = EN ? {
+  eindruck: `{"pruefsteine": {"p1": ${PS}, "p2": …, "p3": …, "p4": …}, "ko": null or "which K.O., with evidence from the pitch", "schnitt": 0.0, "sicherheit": 1, "text": "…", "fragen": ["…", "…"], "meinung_aendert": "one concrete fact or number", "kernpunkt": "≤ 12 words"}`,
+  schlagabtausch: `{"an": "<slug>", "text": "…", "zugestaendnis": "1 sentence", "pruefsteine": {"p2": ${PS}}, "bewegt": "nein" or "P2 from 4 to 6 because …", "bedingungen": ["checkable: number, date or test"], "kernpunkt": "≤ 12 words"}`,
+  angebote: beirat ? '{"entscheidung": "nein|ja_wenn", "regel": "e.g. average 5.4 below 6.5", "text": "…", "bedingungen": ["checkable"]}'
+    : '{"entscheidung": "raus|angebot", "regel": "e.g. average 5.4 below 6.5", "text": "…", "angebot": {"betrag": 0, "anteil": 0, "bedingungen": ["…"], "mit": []}}',
+  verhandlung: '{"entscheidung": "angenommen|abgelehnt|neues_angebot", "text": "…", "angebot": {"betrag": 0, "anteil": 0, "bedingungen": ["…"]}}',
+} : {
   eindruck: `{"pruefsteine": {"p1": ${PS}, "p2": …, "p3": …, "p4": …}, "ko": null oder "welches K.O., mit Beleg aus dem Pitch", "schnitt": 0.0, "sicherheit": 1, "text": "…", "fragen": ["…", "…"], "meinung_aendert": "ein konkreter Fakt oder eine Zahl", "kernpunkt": "≤ 12 Wörter"}`,
   schlagabtausch: `{"an": "<slug>", "text": "…", "zugestaendnis": "1 Satz", "pruefsteine": {"p2": ${PS}}, "bewegt": "nein" oder "P2 von 4 auf 6, weil …", "bedingungen": ["prüfbar: Zahl, Datum oder Test"], "kernpunkt": "≤ 12 Wörter"}`,
   angebote: beirat ? '{"entscheidung": "nein|ja_wenn", "regel": "z. B. Schnitt 5,4 unter 6,5", "text": "…", "bedingungen": ["prüfbar"]}'
@@ -99,7 +116,7 @@ if (cmd === 'auftrag') {
   const runde = a3; if (!AUFGABE[runde]) throw new Error('Runde unbekannt: ' + runde);
   const zusatz = arg('zusatz') ? JSON.parse(fs.readFileSync(arg('zusatz'), 'utf8')) : {};
   const ziel = path.join(root, 'sessions', id, 'auftrag'); fs.mkdirSync(ziel, { recursive: true }); fs.mkdirSync(path.join(root, 'sessions', id, 'antwort'), { recursive: true });
-  if (!fs.existsSync(verlauf)) fs.writeFileSync(verlauf, `VORHABEN:\n${s.pitch.text}\n\nVERLAUF:\n`);
+  if (!fs.existsSync(verlauf)) fs.writeFileSync(verlauf, t(`VORHABEN:\n${s.pitch.text}\n\nVERLAUF:\n`, `PROPOSAL:\n${s.pitch.text}\n\nTRANSCRIPT:\n`));
   s.lauf ??= {}; s.lauf.start ??= new Date().toISOString();
   const f = s.pitch.forderung;
   for (const slug of slugs(a4)) {
@@ -133,10 +150,38 @@ Aufgabe: ${AUFGABE[runde]}${OPT.length && runde !== 'verhandlung' ? `\nOptionen:
 Antwort: nur ein JSON-Objekt im Format unten, ohne Codeblock und ohne Vorrede.
 Format: ${FORMAT[runde]}${OPT.length && runde !== 'verhandlung' ? `\nZusätzlich im selben Objekt: "optionen": {${OPT.map(o => `"${o.id}": 0`).join(', ')}}${runde === 'eindruck' ? ', "empfehlung": "<Option>"' : ''}` : ''}
 `;
-    const af = path.join(ziel, `${runde}-${slug}.md`); fs.writeFileSync(af, txt);
+
+    const txtEN = `You are ${d.name} (${d.etikett}) ${ROLLE}.
+Read in this order:
+1. The judging rules (how you score and decide): ${path.join(root, 'skill/urteilsregeln.en.md')}
+2. Your dossier (your memory, start with "How I decide"): ${d.pfad}
+${UNTERLAGEN ? `3. The pitch documents, completely, before you judge: ${UNTERLAGEN}
+4.` : '3.'} The transcript of this session: ${verlauf}
+Your lead question, which only you ask: "${d.leitfrage}"
+
+Rules:
+- First person, English, plain spoken American business English. Texts 2–4 sentences, never open with praise.
+- No invented facts about yourself or the proposal. What is missing, you score by the judging rules.
+- Tough on substance, never insulting.
+- Your text must match your numbers.${UNTERLAGEN ? `
+- Whatever is in the documents has the source "pitch". Cost, margin and runway you calculate only with the cost structure in the documents, salaries included (rules 12).` : `
+- There are no pitch documents. Don't calculate cost, margin or runway yourself; write "costs missing" (rules 12).`}
+
+Proposal:
+${s.pitch.text}${OPT.length ? `\n\nOptions to decide between:\n${optText()}` : ''}
+${f && FB ? `Ask: ${euro(f.betrag)} for ${f.anteil} % (valuation: ${euro(FB.pre)} pre, ${euro(FB.post)} post-money)\n` : f ? `Ask: ${euro(f.betrag)} without equity\n` : !beirat && s.pitch.forderung === null ? 'Ask: none, the founders are not looking for investment (rules 3).\n' : ''}
+Other members: ${andere}
+${z.ps ? `\nYour current scores: ${psZeile(z.ps, z.schnitt, z.ko)}${OPT.length ? ` · Options ${optZeile(optStand(slug))}` : ''}\n` : ''}
+Round: ${runde}
+Task: ${AUFGABE[runde]}${OPT.length && runde !== 'verhandlung' ? `\nOptions: Score every option 0–10 by how strongly you support it from your lead question (rules 10)${runde === 'eindruck' ? ', and name your recommendation' : ', all options, even if unchanged'}.` : ''}${zusatz[slug] ? `\nAdditional: ${zusatz[slug]}` : ''}
+
+Answer: only one JSON object in the format below, no code block, no preamble. Keep the JSON keys and the values pitch/annahme/fehlt and nein/ja_wenn exactly as written.
+Format: ${FORMAT[runde]}${OPT.length && runde !== 'verhandlung' ? `\nAlso in the same object: "optionen": {${OPT.map(o => `"${o.id}": 0`).join(', ')}}${runde === 'eindruck' ? ', "empfehlung": "<option>"' : ''}` : ''}
+`;
+    const af = path.join(ziel, `${runde}-${slug}.md`); fs.writeFileSync(af, EN ? txtEN : txt);
     console.log(`Rat: ${d.name} · ${runde}\t${af}`);
   }
-  live(runde, runde === 'eindruck' ? 'Die Runde liest Dossier, Regeln und Vorhaben' : runde === 'angebote' ? 'Die Runde entscheidet: aussteigen oder Angebot' : `${slugs(a4).map(x => dossier(x).name).join(', ')} denkt nach`);
+  live(runde, runde === 'eindruck' ? t('Die Runde liest Dossier, Regeln und Vorhaben', 'The council reads dossiers, rules and the proposal') : runde === 'angebote' ? t('Die Runde entscheidet: aussteigen oder Angebot', 'The council votes') : `${slugs(a4).map(x => dossier(x).name).join(', ')} ${t('denkt nach', 'is thinking')}`);
   speichern(); pruefen();
   console.log(`\nJe Agent: description genau wie oben vor dem Tab, subagent_type ratsmitglied, Prompt: Lies deinen Auftrag in <Pfad> und befolge ihn genau.`);
 }
@@ -179,7 +224,7 @@ else if (cmd === 'sammeln') {
     if (e.length > 1 && Math.max(...w) - Math.min(...w) <= 1 && new Set(e.map(b => b.haltung.status)).size === 1)
       zus.push(`\nEINIGKEIT (Spanne ${zahl(Math.round((Math.max(...w) - Math.min(...w)) * 10) / 10)}): Die stärkste unbesprochene Gegenposition als Kernfrage setzen und dem Mitglied zuweisen, dessen Prüfsteine am meisten dafür hergeben.`);
   }
-  live(runde, 'Die Moderation sammelt und ordnet');
+  live(runde, t('Die Moderation sammelt und ordnet', 'The moderator collects and sorts'));
   speichern(); pruefen();
   console.log(zus.join('\n')); if (fehler) process.exit(2);
 }
@@ -192,7 +237,7 @@ else if (cmd === 'beitrag') {
 
 else if (cmd === 'kernfragen') {
   s.kernfragen = JSON.parse(a3);
-  fs.appendFileSync(verlauf, `\nKERNFRAGEN (Moderation):\n${s.kernfragen.map((k, i) => `${i + 1}. ${k.frage} — ${k.seiten.map(x => `${x.position}: ${x.mitglieder.map(name).join(', ')}`).join(' / ')}${k.auftrag ? ` (${k.auftrag})` : ''}`).join('\n')}\n\n`);
+  fs.appendFileSync(verlauf, `\n${t('KERNFRAGEN (Moderation)', 'KEY QUESTIONS (moderator)')}:\n${s.kernfragen.map((k, i) => `${i + 1}. ${k.frage} — ${k.seiten.map(x => `${x.position}: ${x.mitglieder.map(name).join(', ')}`).join(' / ')}${k.auftrag ? ` (${k.auftrag})` : ''}`).join('\n')}\n\n`);
   speichern(); console.log('Kernfragen im Verlauf.');
 }
 

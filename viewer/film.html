@@ -64,14 +64,14 @@
 <body>
 <div id="buehne">
   <div id="kamera"><img class="basis" id="basis" alt=""><div id="figuren"></div><div id="licht"></div></div>
-  <div class="marke" id="marke"><svg width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h20M4 18l-1-10 5 4 4-7 4 7 5-4-1 10"/></svg><span id="markenname">Generalprobe</span><span class="sim">KI-Simulation</span></div>
-  <div class="tafel weg" id="vorhaben"><div class="kicker">Das Vorhaben</div><div class="titel" id="pitch"></div><div class="unter" id="gruender"></div></div>
+  <div class="marke" id="marke"><svg width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h20M4 18l-1-10 5 4 4-7 4 7 5-4-1 10"/></svg><span id="markenname">Generalprobe</span><span class="sim" id="sim">KI-Simulation</span></div>
+  <div class="tafel weg" id="vorhaben"><div class="kicker" id="kicker">Das Vorhaben</div><div class="titel" id="pitch"></div><div class="unter" id="gruender"></div></div>
   <div class="schleier" id="schleier" style="opacity:0"></div>
   <div class="tafel weg" id="rede"><div class="wer" id="wer"></div><div class="satz" id="satz"></div></div>
   <div id="stempel"></div>
   <div id="urteil"><div><div class="badge" id="badge"></div><div class="titel" id="u1"></div><div class="unter" id="u2"></div></div></div>
-  <div id="ende"><div><div class="titel">Die Generalprobe vor der Entscheidung</div><div class="unter">Fünf Rollen prüfen ein Vorhaben, bevor Geld fließt. Kostenlos als Baukasten für Claude Code.</div>
-    <div class="repo">github.com/Vektoris-AI/generalprobe</div><div class="hinweis">KI-Simulation. Die Ratsmitglieder sind Rollen, keine echten Personen.</div></div></div>
+  <div id="ende"><div><div class="titel" id="e1">Die Generalprobe vor der Entscheidung</div><div class="unter" id="e2">Fünf Rollen prüfen ein Vorhaben, bevor Geld fließt. Kostenlos als Baukasten für Claude Code.</div>
+    <div class="repo">github.com/Vektoris-AI/generalprobe</div><div class="hinweis" id="e3">KI-Simulation. Die Ratsmitglieder sind Rollen, keine echten Personen.</div></div></div>
 </div>
 <script src="rat.js"></script>
 <script src="sofa.js"></script>
@@ -85,6 +85,14 @@ const W = HOCH ? 1080 : 1920, H = HOCH ? 1350 : 1080;
 const SOFA = window.LR_SOFA, RAT = window.LR_RAT || {};
 const warte = ms => new Promise(r => setTimeout(r, ms));
 const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+// Texte je Sprache der Sitzung („sprache“: "en" → Englisch, sonst Deutsch)
+const TEXTE = {
+  de: { sim: 'KI-Simulation', kicker: 'Das Vorhaben', widerspricht: n => `widerspricht ${n}`, eindruck: 'erster Eindruck', ja: 'JA, WENN …', nein: 'NEIN',
+    ende: ['Die Generalprobe vor der Entscheidung', 'Fünf Rollen prüfen ein Vorhaben, bevor Geld fließt. Kostenlos als Baukasten für Claude Code.', 'KI-Simulation. Die Ratsmitglieder sind Rollen, keine echten Personen.'] },
+  en: { sim: 'AI simulation', kicker: 'The decision', widerspricht: n => `pushes back on ${n}`, eindruck: 'first impression', ja: 'YES, IF …', nein: 'NO',
+    ende: ['Rehearse the decision before you spend the money', 'Five AI critics take your plan apart. Free Claude Code skill.', 'AI simulation. The council members are roles, not real people.'] },
+};
+let T = TEXTE.de;
 
 // Maße je Format
 const B = $('#buehne'); B.style.width = W + 'px'; B.style.height = H + 'px';
@@ -126,7 +134,9 @@ for (const [slug, f] of Object.entries(SOFA.figuren)) {
   el.innerHTML = Object.entries(f.flicken).map(([v, p]) => `<img class="flick f-${v}" src="${p.bild}" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px" alt="">`).join('');
   figuren.appendChild(el);
 }
-const fig = slug => figuren.querySelector(`[data-slug="${slug}"]`);
+// Ein Mitglied kann die Figur eines anderen spielen („avatar“ im Dossier, z. B. der englische Rat auf dem deutschen Sofa)
+const av = slug => RAT[slug]?.avatar ?? slug, auf = slug => SOFA.figuren[av(slug)];
+const fig = slug => figuren.querySelector(`[data-slug="${av(slug)}"]`);
 // Lippenbewegung wie in der Bühnen-Ansicht: je Silbe erst leicht offen, dann die Vokalform; fehlende Formen fallen zurück
 const ERSATZ = { m1: ['m1', 'm2'], m2: ['m2', 'm1'], m3: ['m3', 'm2', 'm1'], m4: ['m4', 'm2', 'm1'] };
 const form = (el, v) => v && (ERSATZ[v].find(x => el.querySelector('.f-' + x)) ?? null);
@@ -143,13 +153,13 @@ setInterval(() => figuren.querySelectorAll('.fig').forEach(el => {
 
 function zeigeTafel(id, an) { $(id).classList.toggle('weg', !an); }
 const DATIV = { Der: 'dem', Die: 'der' };
-const anrede = slug => { const n = RAT[slug]?.name ?? ''; const [art, ...rest] = n.split(' '); return DATIV[art] ? `${DATIV[art]} ${rest.join(' ')}` : n; };
+const anrede = slug => { const n = RAT[slug]?.name ?? ''; const [art, ...rest] = n.split(' '); if (T === TEXTE.en) return art === 'The' ? `the ${rest.join(' ')}` : n; return DATIV[art] ? `${DATIV[art]} ${rest.join(' ')}` : n; };
 
 async function sage(b) {
   const el = fig(b.sprecher), woerter = b.kernpunkt.split(/\s+/);
-  $('#wer').innerHTML = esc(RAT[b.sprecher]?.name) + (b.an && RAT[b.an] ? ` <span>widerspricht ${esc(anrede(b.an))}</span>` : b.phase === 'eindruck' ? ' <span>erster Eindruck</span>' : '');
+  $('#wer').innerHTML = esc(RAT[b.sprecher]?.name) + (b.an && RAT[b.an] ? ` <span>${esc(T.widerspricht(anrede(b.an)))}</span>` : b.phase === 'eindruck' ? ` <span>${esc(T.eindruck)}</span>` : '');
   $('#satz').innerHTML = woerter.map(w => `<i>${esc(w)}</i>`).join(' ');
-  nah(b.sprecher); licht(b.sprecher); $('#schleier').style.opacity = 1;
+  nah(av(b.sprecher)); licht(av(b.sprecher)); $('#schleier').style.opacity = 1;
   await warte(900); zeigeTafel('#rede', true); await warte(350);
   const spans = [...$('#satz').children];
   for (let k = 0; k < woerter.length; k++) {
@@ -161,22 +171,24 @@ async function sage(b) {
 
 async function film(S) {
   const F = S.film || {};
+  T = TEXTE[S.sprache] ?? TEXTE.de; document.documentElement.lang = S.sprache === 'en' ? 'en' : 'de';
+  $('#sim').textContent = T.sim; $('#kicker').textContent = T.kicker; ['#e1', '#e2', '#e3'].forEach((k, i) => { $(k).textContent = T.ende[i]; });
   $('#pitch').textContent = F.pitch || S.titel; $('#gruender').textContent = S.pitch.gruender;
-  const beitraege = (F.beitraege || []).map(i => S.beitraege[i]).filter(b => b?.kernpunkt && SOFA.figuren[b.sprecher]);
+  const beitraege = (F.beitraege || []).map(i => S.beitraege[i]).filter(b => b?.kernpunkt && auf(b.sprecher));
   totale(); await warte(400);
   zeigeTafel('#vorhaben', true); $('#schleier').style.opacity = HOCH ? 0 : 1; await warte(3600);
   zeigeTafel('#vorhaben', false); await warte(400);
   for (const b of beitraege) await sage(b);
   // Votum: zurück in die Totale, jede Rolle bekommt ihren Stempel
   licht(null); $('#schleier').style.opacity = 0; totale(); await warte(1400);
-  const voten = S.beitraege.filter(b => b.phase === 'angebote' && SOFA.figuren[b.sprecher]);
-  const reihe = Object.keys(SOFA.figuren).map(s => voten.find(b => b.sprecher === s)).filter(Boolean);
+  const voten = S.beitraege.filter(b => b.phase === 'angebote' && auf(b.sprecher));
+  const reihe = Object.keys(SOFA.figuren).map(s => voten.find(b => av(b.sprecher) === s)).filter(Boolean);
   for (const [k, b] of reihe.entries()) {
-    const f = SOFA.figuren[b.sprecher], ja = b.haltung?.status !== 'raus';
-    const st = document.createElement('div'); st.className = 'stempel ' + (ja ? 'ja' : 'nein'); st.textContent = ja ? 'JA, WENN …' : 'NEIN';
+    const f = auf(b.sprecher), ja = b.haltung?.status !== 'raus';
+    const st = document.createElement('div'); st.className = 'stempel ' + (ja ? 'ja' : 'nein'); st.textContent = ja ? T.ja : T.nein;
     st.style.left = cam.x + f.x * cam.s + 'px'; st.style.top = cam.y + (f.y - 250 * R) * cam.s + (k % 2 ? -46 : 0) + 'px';
     $('#stempel').appendChild(st); requestAnimationFrame(() => st.classList.add('da'));
-    sprich(fig(b.sprecher), ja ? 'ja' : 'nein', 420); await warte(520);
+    sprich(fig(b.sprecher), ja ? (T === TEXTE.en ? 'yes' : 'ja') : (T === TEXTE.en ? 'no' : 'nein'), 420); await warte(520);
   }
   await warte(1500);
   const go = S.urteil.ergebnis === 'deal';
